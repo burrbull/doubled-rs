@@ -1,0 +1,13 @@
+[package]
+name = "doubled"
+version = "0.0.1"
+authors = ["Andrey Zgarbul <zgarbul.andrey@gmail.com>"]
+edition = "2018"
+
+[dependencies.packed_simd]
+version = "0.3"
+features = ["into_bits"]
+optional = true
+
+[features]
+default = []
