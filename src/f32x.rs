@@ -8,22 +8,36 @@ macro_rules! impl_f2_f32 {
         }
         
         impl IsInf for $f32x {
-          type Mask = $m32x;
-          #[inline]
-          fn isinf(self) -> Self::Mask {
-             self.abs().eq(Self::splat(SLEEF_INFINITY_F))
-          }
-          #[inline]
-          fn ispinf(self) -> Self::Mask {
-            self.eq(Self::splat(SLEEF_INFINITY_F))
-          }
+            type Mask = $m32x;
+            #[inline]
+            fn isinf(self) -> Self::Mask {
+                self.abs().eq(Self::splat(SLEEF_INFINITY_F))
+            }
+            #[inline]
+            fn ispinf(self) -> Self::Mask {
+                self.eq(Self::splat(SLEEF_INFINITY_F))
+            }
         }
         impl IsNan for $f32x {
-          type Mask = $m32x;
-          #[inline]
-          fn isnan(self) -> Self::Mask {
-            self.ne(self)
-          }
+            type Mask = $m32x;
+            #[inline]
+            fn isnan(self) -> Self::Mask {
+                self.ne(self)
+            }
+        }
+
+        impl core::convert::From<$f32x> for Doubled<$f32x> {
+            #[inline]
+            fn from(f: $f32x) -> Self {
+                Self::new(f, $f32x::splat(0.))
+            }
+        }
+
+        impl core::convert::From<Doubled<$f32x>> for $f32x {
+            #[inline]
+            fn from(f: Doubled<$f32x>) -> Self {
+                f.0 + f.1
+            }
         }
 
         impl Doubled<$f32x> {

@@ -35,6 +35,20 @@ fn fabsk(x: f64) -> f64 {
     f64::from_bits(0x7fffffffffffffff & x.to_bits())
 }
 
+impl core::convert::From<f64> for Doubled<f64> {
+    #[inline]
+    fn from(f: f64) -> Self {
+        Self::new(f, 0.)
+    }
+}
+
+impl core::convert::From<Doubled<f64>> for f64 {
+    #[inline]
+    fn from(f: Doubled<f64>) -> Self {
+        f.0 + f.1
+    }
+}
+
 impl Doubled<f64> {
     #[inline]
     pub fn abs(self) -> Self {

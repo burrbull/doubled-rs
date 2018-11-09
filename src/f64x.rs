@@ -19,22 +19,36 @@ macro_rules! impl_f2_f64 {
         }
         
         impl IsInf for $f64x {
-          type Mask = $m64x;
-          #[inline]
-          fn isinf(self) -> Self::Mask {
-             self.abs().eq(Self::splat(SLEEF_INFINITY))
-          }
-          #[inline]
-          fn ispinf(self) -> Self::Mask {
-            self.eq(Self::splat(SLEEF_INFINITY))
-          }
+            type Mask = $m64x;
+            #[inline]
+            fn isinf(self) -> Self::Mask {
+                self.abs().eq(Self::splat(SLEEF_INFINITY))
+            }
+            #[inline]
+            fn ispinf(self) -> Self::Mask {
+                self.eq(Self::splat(SLEEF_INFINITY))
+            }
         }
         impl IsNan for $f64x {
-          type Mask = $m64x;
-          #[inline]
-          fn isnan(self) -> Self::Mask {
-            self.ne(self)
-          }
+            type Mask = $m64x;
+            #[inline]
+            fn isnan(self) -> Self::Mask {
+                self.ne(self)
+            }
+        }
+
+        impl core::convert::From<$f64x> for Doubled<$f64x> {
+            #[inline]
+            fn from(f: $f64x) -> Self {
+                Self::new(f, $f64x::splat(0.))
+            }
+        }
+
+        impl core::convert::From<Doubled<$f64x>> for $f64x {
+            #[inline]
+            fn from(f: Doubled<$f64x>) -> Self {
+                f.0 + f.1
+            }
         }
 
         impl Doubled<$f64x> {
