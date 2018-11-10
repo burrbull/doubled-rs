@@ -27,8 +27,13 @@ impl<T> Doubled<T> where T: Sized {
     pub fn new(x0: T, x1: T) -> Self {
         Doubled(x0, x1)
     }
-
 }
+
+pub trait FromMask {
+    type Mask;
+    fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self;
+}
+
 pub trait Normalize {
     fn normalize(self) -> Self;
 }
@@ -62,6 +67,10 @@ pub trait Check {
 
 pub trait CheckOrder<T=Self> {
     fn check_order(self, other: T);
+}
+
+pub trait AsDoubled where Self: Sized {
+    fn as_doubled(self) -> Doubled<Self>;
 }
 
 pub trait AddAsDoubled where Self: Sized {
@@ -216,6 +225,17 @@ where
         let r0 = self.0 + other.0;
         let v = r0 - self.0;
         Self::new(r0, self.0 - (r0 - v) + (other.0 - v) + (self.1 + other.1))
+    }
+}
+
+impl<T> core::ops::Sub for Doubled<T>
+where
+    Self: core::ops::Add<Output=Self> + core::ops::Neg<Output=Self>
+{
+    type Output = Self;
+    #[inline]
+    fn sub(self, other: Self) -> Self {
+        self + (- other)
     }
 }
 

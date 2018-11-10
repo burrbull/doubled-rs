@@ -19,6 +19,13 @@ impl IsNan for f32 {
     }
 }
 
+impl FromMask for Doubled<f32> {
+    type Mask = u32;
+    fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
+        Self::new(f32::from_bits(u0), f32::from_bits(u1))
+    }
+}
+
 impl Check for f32 {
     fn check(self) -> bool {
         self.isinf() || self.isnan()
@@ -202,6 +209,13 @@ impl core::ops::Div for Doubled<f32> {
             + q0 * (1. - dh * th - dh * tl - dl * th - dl * tl);
 
         Self::new(q0, t * (self.1 - q0 * other.1) + u)
+    }
+}
+
+impl AsDoubled for f32 {
+    #[inline]
+    fn as_doubled(self) -> Doubled<Self> {
+        Doubled::new(self, 0.)
     }
 }
 

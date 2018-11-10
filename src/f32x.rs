@@ -26,6 +26,13 @@ macro_rules! impl_f2_f32 {
             }
         }
 
+        impl FromMask for Doubled<$f32x> {
+            type Mask = $u32x;
+            fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
+                Self::new($f32x::from_bits(u0), $f32x::from_bits(u1))
+            }
+        }
+
         impl core::convert::From<$f32x> for Doubled<$f32x> {
             #[inline]
             fn from(f: $f32x) -> Self {
@@ -259,6 +266,14 @@ macro_rules! impl_f2_f32 {
             fn check_order(self, _other: Self) {
             }
         }
+
+        impl AsDoubled for $f32x {
+            #[inline]
+            fn as_doubled(self) -> Doubled<Self> {
+                Doubled::new(self, Self::splat(0.))
+            }
+        }
+
         impl MulAsDoubled for $f32x {
             #[cfg(target_feature = "fma")]
             #[inline]

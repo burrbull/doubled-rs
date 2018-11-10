@@ -19,6 +19,13 @@ impl IsNan for f64 {
     }
 }
 
+impl FromMask for Doubled<f64> {
+    type Mask = u64;
+    fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
+        Self::new(f64::from_bits(u0), f64::from_bits(u1))
+    }
+}
+
 impl Check for f64 {
     fn check(self) -> bool {
         self.isinf() || self.isnan()
@@ -212,6 +219,14 @@ impl core::ops::Div for Doubled<f64> {
         Self::new(q0, t * (self.1 - q0 * other.1) + u)
     }
 }
+
+impl AsDoubled for f64 {
+    #[inline]
+    fn as_doubled(self) -> Doubled<Self> {
+        Doubled::new(self, 0.)
+    }
+}
+
 impl MulAsDoubled for f64 {
     #[inline]
     fn mul_as_doubled(self, other: Self) -> Doubled<Self> {

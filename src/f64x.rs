@@ -37,6 +37,13 @@ macro_rules! impl_f2_f64 {
             }
         }
 
+        impl FromMask for Doubled<$f64x> {
+            type Mask = $u64x;
+            fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
+                Self::new($f64x::from_bits(u0), $f64x::from_bits(u1))
+            }
+        }
+
         impl core::convert::From<$f64x> for Doubled<$f64x> {
             #[inline]
             fn from(f: $f64x) -> Self {
@@ -252,7 +259,14 @@ macro_rules! impl_f2_f64 {
             fn check_order(self, _other: Self) {
             }
         }
-        
+
+        impl AsDoubled for $f64x {
+            #[inline]
+            fn as_doubled(self) -> Doubled<Self> {
+                Doubled::new(self, Self::splat(0.))
+            }
+        }
+
         impl MulAsDoubled for $f64x {
             #[cfg(target_feature = "fma")]
             #[inline]
