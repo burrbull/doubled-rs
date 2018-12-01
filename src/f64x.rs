@@ -17,6 +17,25 @@ macro_rules! impl_f2_f64 {
         fn vupper_vd_vd(d: $f64x) -> $f64x {
             $f64x::from_bits($u64x::from_bits(d) & $u64x::from_u32((0xffffffff, 0xf8000000)))
         }
+        
+        impl IsInf for $f64x {
+            type Mask = $m64x;
+            #[inline]
+            fn isinf(self) -> Self::Mask {
+                self.abs().eq(Self::splat(SLEEF_INFINITY))
+            }
+            #[inline]
+            fn ispinf(self) -> Self::Mask {
+                self.eq(Self::splat(SLEEF_INFINITY))
+            }
+        }
+        impl IsNan for $f64x {
+            type Mask = $m64x;
+            #[inline]
+            fn isnan(self) -> Self::Mask {
+                self.ne(self)
+            }
+        }
 
         impl FromMask for Doubled<$f64x> {
             type Mask = $u64x;
@@ -49,16 +68,6 @@ macro_rules! impl_f2_f64 {
                             ^ ($u64x::from_bits(self.0) & $u64x::from_bits($f64x::splat(-0.))),
                     ),
                 )
-            }
-
-            #[inline]
-            fn is_nan(self) -> $m64x {
-                self.ne(self)
-            }
-
-            #[inline]
-            fn is_infinite(self) -> $m64x {
-                self.abs().eq(Self::splat(SLEEF_INFINITY))
             }
 
             #[cfg(target_feature = "fma")]
@@ -232,19 +241,23 @@ macro_rules! impl_f2_f64 {
         }
 
         impl CheckOrder for Doubled<$f64x> {
-            fn check_order(self, _other: Self) {}
+            fn check_order(self, _other: Self) {
+            }
         }
 
         impl CheckOrder<$f64x> for Doubled<$f64x> {
-            fn check_order(self, _other: $f64x) {}
+            fn check_order(self, _other: $f64x) {
+            }
         }
 
         impl CheckOrder<Doubled<$f64x>> for $f64x {
-            fn check_order(self, _other: Doubled<$f64x>) {}
+            fn check_order(self, _other: Doubled<$f64x>) {
+            }
         }
 
         impl CheckOrder for $f64x {
-            fn check_order(self, _other: Self) {}
+            fn check_order(self, _other: Self) {
+            }
         }
 
         impl AsDoubled for $f64x {

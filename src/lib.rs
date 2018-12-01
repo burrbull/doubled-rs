@@ -9,13 +9,20 @@ pub const SLEEF_NAN_F: f32 = SLEEF_NAN as f32;
 mod f32;
 mod f64;
 
+pub trait IsInf {
+    type Mask;
+    fn isinf(self) -> Self::Mask;
+    fn ispinf(self) -> Self::Mask;
+}
+pub trait IsNan {
+    type Mask;
+    fn isnan(self) -> Self::Mask;
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Doubled<T>(pub T, pub T);
 
-impl<T> Doubled<T>
-where
-    T: Sized,
-{
+impl<T> Doubled<T> where T: Sized {
     #[inline]
     pub fn new(x0: T, x1: T) -> Self {
         Doubled(x0, x1)
@@ -33,7 +40,7 @@ pub trait Normalize {
 
 impl<T> Normalize for Doubled<T>
 where
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     fn normalize(self) -> Self {
         let s0 = self.0 + self.1;
@@ -46,7 +53,7 @@ pub trait Scale<T> {
 
 impl<T> Scale<T> for Doubled<T>
 where
-    T: Copy + core::ops::Mul<Output = T>,
+    T: Copy + core::ops::Mul<Output=T>
 {
     #[inline]
     fn scale(self, other: T) -> Self {
@@ -58,33 +65,21 @@ pub trait Check {
     fn check(self) -> bool;
 }
 
-pub trait CheckOrder<T = Self> {
+pub trait CheckOrder<T=Self> {
     fn check_order(self, other: T);
 }
 
-pub trait AsDoubled
-where
-    Self: Sized,
-{
+pub trait AsDoubled where Self: Sized {
     fn as_doubled(self) -> Doubled<Self>;
 }
 
-pub trait AddAsDoubled
-where
-    Self: Sized,
-{
+pub trait AddAsDoubled where Self: Sized {
     fn add_as_doubled(self, other: Self) -> Doubled<Self>;
 }
-pub trait AddCheckedAsDoubled: CheckOrder<Self>
-where
-    Self: Sized,
-{
+pub trait AddCheckedAsDoubled : CheckOrder<Self> where Self: Sized {
     fn add_checked_as_doubled(self, other: Self) -> Doubled<Self>;
 }
-pub trait MulAsDoubled
-where
-    Self: Sized,
-{
+pub trait MulAsDoubled where Self: Sized {
     fn mul_as_doubled(self, other: Self) -> Doubled<Self>;
 }
 
@@ -99,7 +94,7 @@ where
     fn recpre_as_doubled(self) -> Doubled<Self>;
 }
 
-pub trait AddChecked<T = Self>: CheckOrder<T> {
+pub trait AddChecked<T = Self> : CheckOrder<T> {
     type Output;
     fn add_checked(self, other: T) -> Self::Output;
 }
@@ -108,7 +103,7 @@ pub trait AddCheckedAssign<T> {
     fn add_checked_assign(&mut self, other: T);
 }
 
-pub trait SubChecked<T = Self>: CheckOrder<T> {
+pub trait SubChecked<T = Self> : CheckOrder<T> {
     type Output;
     fn sub_checked(self, other: T) -> Self::Output;
 }
@@ -116,7 +111,7 @@ pub trait SubChecked<T = Self>: CheckOrder<T> {
 impl<T> AddChecked for Doubled<T>
 where
     Doubled<T>: CheckOrder,
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -128,10 +123,11 @@ where
     }
 }
 
+
 impl<T> AddChecked<T> for Doubled<T>
 where
     Doubled<T>: CheckOrder<T>,
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -145,9 +141,9 @@ where
 
 impl<T> AddChecked<Doubled<T>> for T
 where
-    T: Copy + CheckOrder<Doubled<T>> + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + CheckOrder<Doubled<T>> + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
-    type Output = Doubled<T>;
+    type Output = Doubled<T> ;
     #[inline]
     fn add_checked(self, other: Doubled<T>) -> Self::Output {
         self.check_order(other);
@@ -158,7 +154,7 @@ where
 
 impl<T> AddCheckedAssign<Self> for Doubled<T>
 where
-    Self: Copy + AddChecked<Output = Self>,
+    Self: Copy + AddChecked<Output=Self>
 {
     #[inline]
     fn add_checked_assign(&mut self, other: Self) {
@@ -168,8 +164,8 @@ where
 
 impl<T> AddCheckedAssign<T> for Doubled<T>
 where
-    Self: AddChecked<T, Output = Self>,
-    T: Copy,
+    Self: AddChecked<T, Output=Self>,
+    T: Copy
 {
     #[inline]
     fn add_checked_assign(&mut self, other: T) {
@@ -180,7 +176,7 @@ where
 impl<T> SubChecked for Doubled<T>
 where
     Doubled<T>: CheckOrder,
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -195,7 +191,7 @@ where
 impl<T> SubChecked<T> for Doubled<T>
 where
     Doubled<T>: CheckOrder<T>,
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -207,9 +203,10 @@ where
     }
 }
 
+
 impl<T> core::ops::Neg for Doubled<T>
 where
-    T: Copy + core::ops::Neg<Output = T>,
+    T: Copy + core::ops::Neg<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -220,7 +217,7 @@ where
 
 impl<T> core::ops::Add for Doubled<T>
 where
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -233,18 +230,18 @@ where
 
 impl<T> core::ops::Sub for Doubled<T>
 where
-    Self: core::ops::Add<Output = Self> + core::ops::Neg<Output = Self>,
+    Self: core::ops::Add<Output=Self> + core::ops::Neg<Output=Self>
 {
     type Output = Self;
     #[inline]
     fn sub(self, other: Self) -> Self {
-        self + (-other)
+        self + (- other)
     }
 }
 
 impl<T> core::ops::AddAssign for Doubled<T>
 where
-    Self: Copy + core::ops::Add<Output = Self>,
+    Self: Copy + core::ops::Add<Output=Self>
 {
     #[inline]
     fn add_assign(&mut self, other: Self) {
@@ -254,7 +251,7 @@ where
 
 impl<T> core::ops::Add<T> for Doubled<T>
 where
-    T: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    T: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     type Output = Self;
     #[inline]
@@ -265,9 +262,10 @@ where
     }
 }
 
+
 impl<T> core::ops::AddAssign<T> for Doubled<T>
 where
-    Self: Copy + core::ops::Add<T, Output = Self>,
+    Self: Copy + core::ops::Add<T, Output=Self>
 {
     #[inline]
     fn add_assign(&mut self, other: T) {
@@ -275,9 +273,10 @@ where
     }
 }
 
+
 impl<T> core::ops::MulAssign for Doubled<T>
 where
-    Self: Copy + core::ops::Mul<Output = Self>,
+    Self: Copy + core::ops::Mul<Output=Self>
 {
     #[inline]
     fn mul_assign(&mut self, other: Self) {
@@ -287,7 +286,7 @@ where
 
 impl<T> core::ops::MulAssign<T> for Doubled<T>
 where
-    Self: Copy + core::ops::Mul<T, Output = Self>,
+    Self: Copy + core::ops::Mul<T, Output=Self>
 {
     #[inline]
     fn mul_assign(&mut self, other: T) {
@@ -295,9 +294,10 @@ where
     }
 }
 
+
 impl<T> AddAsDoubled for T
 where
-    Self: Copy + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    Self: Copy + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     #[inline]
     fn add_as_doubled(self, other: Self) -> Doubled<Self> {
@@ -309,7 +309,7 @@ where
 
 impl<T> AddCheckedAsDoubled for T
 where
-    Self: Copy + CheckOrder + core::ops::Add<Output = T> + core::ops::Sub<Output = T>,
+    Self: Copy + CheckOrder + core::ops::Add<Output=T> + core::ops::Sub<Output=T>
 {
     #[inline]
     fn add_checked_as_doubled(self, other: Self) -> Doubled<Self> {
