@@ -1,24 +1,5 @@
 use super::*;
 
-impl IsInf for f64 {
-    type Mask = bool;
-    #[inline]
-    fn isinf(self) -> Self::Mask {
-        (self == SLEEF_INFINITY) || (self == -SLEEF_INFINITY)
-    }
-    #[inline]
-    fn ispinf(self) -> Self::Mask {
-        self == SLEEF_INFINITY
-    }
-}
-impl IsNan for f64 {
-    type Mask = bool;
-    #[inline]
-    fn isnan(self) -> Self::Mask {
-        self != self
-    }
-}
-
 impl FromMask for Doubled<f64> {
     type Mask = u64;
     fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
@@ -28,7 +9,7 @@ impl FromMask for Doubled<f64> {
 
 impl Check for f64 {
     fn check(self) -> bool {
-        self.isinf() || self.isnan()
+        self.is_infinite() || self.is_nan()
     }
 }
 

@@ -10,7 +10,7 @@ macro_rules! impl_f2_f32 {
         impl IsInf for $f32x {
             type Mask = $m32x;
             #[inline]
-            fn isinf(self) -> Self::Mask {
+            fn is_infinite(self) -> Self::Mask {
                 self.abs().eq(Self::splat(SLEEF_INFINITY_F))
             }
             #[inline]
@@ -21,7 +21,7 @@ macro_rules! impl_f2_f32 {
         impl IsNan for $f32x {
             type Mask = $m32x;
             #[inline]
-            fn isnan(self) -> Self::Mask {
+            fn is_nan(self) -> Self::Mask {
                 self.ne(self)
             }
         }

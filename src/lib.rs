@@ -11,12 +11,12 @@ mod f64;
 
 pub trait IsInf {
     type Mask;
-    fn isinf(self) -> Self::Mask;
+    fn is_infinite(self) -> Self::Mask;
     fn ispinf(self) -> Self::Mask;
 }
 pub trait IsNan {
     type Mask;
-    fn isnan(self) -> Self::Mask;
+    fn is_nan(self) -> Self::Mask;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
