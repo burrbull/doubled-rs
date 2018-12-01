@@ -6,25 +6,6 @@ macro_rules! impl_f2_f32 {
         fn vupper_vf_vf(d: $f32x) -> $f32x {
             ($u32x::from_bits(d) & $u32x::splat(0xfffff000)).into_bits()
         }
-        
-        impl IsInf for $f32x {
-            type Mask = $m32x;
-            #[inline]
-            fn isinf(self) -> Self::Mask {
-                self.abs().eq(Self::splat(SLEEF_INFINITY_F))
-            }
-            #[inline]
-            fn ispinf(self) -> Self::Mask {
-                self.eq(Self::splat(SLEEF_INFINITY_F))
-            }
-        }
-        impl IsNan for $f32x {
-            type Mask = $m32x;
-            #[inline]
-            fn isnan(self) -> Self::Mask {
-                self.ne(self)
-            }
-        }
 
         impl FromMask for Doubled<$f32x> {
             type Mask = $u32x;
@@ -53,16 +34,28 @@ macro_rules! impl_f2_f32 {
                 Self::new(
                     self.0.abs(),
                     ($u32x::from_bits(self.1)
-                            ^ ($u32x::from_bits(self.0) & $u32x::from_bits($f32x::splat(-0.)))
-                    ).into_bits()
+                        ^ ($u32x::from_bits(self.0) & $u32x::from_bits($f32x::splat(-0.))))
+                    .into_bits(),
                 )
+            }
+            #[inline]
+            fn is_nan(self) -> $m32x {
+                self.ne(self)
+            }
+
+            #[inline]
+            fn is_infinite(self) -> $m32x {
+                self.abs().eq(Self::splat(SLEEF_INFINITY_F))
             }
 
             #[cfg(target_feature = "fma")]
             #[inline]
             pub fn square(self) -> Self {
                 let r0 = self.0 * self.0;
-                Self::new(r0, (self.0 + self.0).mul_adde(self.1, self.0.mul_sube(self.0, r0)))
+                Self::new(
+                    r0,
+                    (self.0 + self.0).mul_adde(self.1, self.0.mul_sube(self.0, r0)),
+                )
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
@@ -108,7 +101,8 @@ macro_rules! impl_f2_f32 {
             #[cfg(target_feature = "fma")]
             #[inline]
             pub fn mul_as_f(self, other: Self) -> $f32x {
-                self.0.mul_adde(other.0, self.1.mul_adde(other.0, self.0 * other.1))
+                self.0
+                    .mul_adde(other.0, self.1.mul_adde(other.0, self.0 * other.1))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
@@ -137,7 +131,7 @@ macro_rules! impl_f2_f32 {
         }
 
         impl core::ops::Add<Doubled<$f32x>> for $f32x {
-            type Output = Doubled<$f32x> ;
+            type Output = Doubled<$f32x>;
             #[inline]
             fn add(self, other: Doubled<$f32x>) -> Self::Output {
                 let r0 = self + other.0;
@@ -154,8 +148,10 @@ macro_rules! impl_f2_f32 {
                 let r0 = self.0 * other.0;
                 Self::new(
                     r0,
-                    self.0
-                        .mul_adde(other.1, self.1.mul_adde(other.0, self.0.mul_sube(other.0, r0))),
+                    self.0.mul_adde(
+                        other.1,
+                        self.1.mul_adde(other.0, self.0.mul_sube(other.0, r0)),
+                    ),
                 )
             }
             #[cfg(not(target_feature = "fma"))]
@@ -248,23 +244,19 @@ macro_rules! impl_f2_f32 {
         }
 
         impl CheckOrder for Doubled<$f32x> {
-            fn check_order(self, _other: Self) {
-            }
+            fn check_order(self, _other: Self) {}
         }
 
         impl CheckOrder<$f32x> for Doubled<$f32x> {
-            fn check_order(self, _other: $f32x) {
-            }
+            fn check_order(self, _other: $f32x) {}
         }
 
         impl CheckOrder<Doubled<$f32x>> for $f32x {
-            fn check_order(self, _other: Doubled<$f32x>) {
-            }
+            fn check_order(self, _other: Doubled<$f32x>) {}
         }
 
         impl CheckOrder for $f32x {
-            fn check_order(self, _other: Self) {
-            }
+            fn check_order(self, _other: Self) {}
         }
 
         impl AsDoubled for $f32x {
@@ -328,7 +320,7 @@ macro_rules! impl_f2_f32 {
         impl RecPreAsDoubled for $f32x {
             #[cfg(target_feature = "fma")]
             #[inline]
-            fn recpre_as_doubled(self) -> Doubled<Self>  {
+            fn recpre_as_doubled(self) -> Doubled<Self> {
                 let q0 = self.recpre();
                 Doubled::new(q0, q0 * self.fmanp(q0, Self::splat(1)))
             }

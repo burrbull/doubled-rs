@@ -1,24 +1,5 @@
 use super::*;
 
-impl IsInf for f32 {
-    type Mask = bool;
-    #[inline]
-    fn isinf(self) -> Self::Mask {
-        (self == SLEEF_INFINITY_F) || (self == -SLEEF_INFINITY_F)
-    }
-    #[inline]
-    fn ispinf(self) -> Self::Mask {
-        self == SLEEF_INFINITY_F
-    }
-}
-impl IsNan for f32 {
-    type Mask = bool;
-    #[inline]
-    fn isnan(self) -> Self::Mask {
-        self != self
-    }
-}
-
 impl FromMask for Doubled<f32> {
     type Mask = u32;
     fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
@@ -28,7 +9,7 @@ impl FromMask for Doubled<f32> {
 
 impl Check for f32 {
     fn check(self) -> bool {
-        self.isinf() || self.isnan()
+        self.is_infinite() || self.is_nan()
     }
 }
 
