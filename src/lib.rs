@@ -7,7 +7,6 @@ mod f64;
 pub trait IsInf {
     type Mask;
     fn is_infinite(self) -> Self::Mask;
-    fn ispinf(self) -> Self::Mask;
 }
 pub trait IsNan {
     type Mask;

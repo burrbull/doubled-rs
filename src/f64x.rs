@@ -29,11 +29,8 @@ macro_rules! impl_f2_f64 {
             fn is_infinite(self) -> Self::Mask {
                 self.eq(Self::INFINITY) | self.eq(Self::NEG_INFINITY)
             }
-            #[inline]
-            fn ispinf(self) -> Self::Mask {
-                self.eq(Self::INFINITY)
-            }
         }
+
         impl IsNan for $f64x {
             type Mask = $m64x;
             #[inline]
