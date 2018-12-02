@@ -15,7 +15,7 @@ macro_rules! impl_f2_f64 {
 
         #[inline]
         fn vupper_vd_vd(d: $f64x) -> $f64x {
-            $f64x::from_bits($u64x::from_bits(d) & $u64x::from_u32((0xffffffff, 0xf8000000)))
+            $f64x::from_bits($u64x::from_bits(d) & $u64x::from_u32((0x_ffff_ffff, 0x_f800_0000)))
         }
         impl FloatConsts for $f64x {
             const INFINITY: Self = Self::splat(core::f64::INFINITY);

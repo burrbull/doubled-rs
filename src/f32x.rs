@@ -4,7 +4,7 @@ macro_rules! impl_f2_f32 {
 
         #[inline]
         fn vupper_vf_vf(d: $f32x) -> $f32x {
-            ($u32x::from_bits(d) & $u32x::splat(0xfffff000)).into_bits()
+            ($u32x::from_bits(d) & $u32x::splat(0x_fff_ff000)).into_bits()
         }
 
         impl FloatConsts for $f32x {

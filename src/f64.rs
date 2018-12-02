@@ -15,12 +15,12 @@ impl Check for f64 {
 
 #[inline]
 fn upper(d: f64) -> f64 {
-    f64::from_bits(d.to_bits() & 0xfffffffff8000000)
+    f64::from_bits(d.to_bits() & 0x_ffff_ffff_f800_0000)
 }
 
 #[inline]
 fn fabsk(x: f64) -> f64 {
-    f64::from_bits(0x7fffffffffffffff & x.to_bits())
+    f64::from_bits(0x7fff_ffff_ffff_ffff & x.to_bits())
 }
 
 impl core::convert::From<f64> for Doubled<f64> {

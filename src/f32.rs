@@ -15,12 +15,12 @@ impl Check for f32 {
 
 #[inline]
 fn upperf(d: f32) -> f32 {
-    f32::from_bits(d.to_bits() & 0xfffff000)
+    f32::from_bits(d.to_bits() & 0x_ffff_f000)
 }
 
 #[inline]
 fn fabsfk(x: f32) -> f32 {
-    f32::from_bits(0x7fffffff & x.to_bits())
+    f32::from_bits(0x_7fff_ffff & x.to_bits())
 }
 
 impl core::convert::From<f32> for Doubled<f32> {

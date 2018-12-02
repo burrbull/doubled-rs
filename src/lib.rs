@@ -14,7 +14,7 @@ pub trait IsNan {
     fn is_nan(self) -> Self::Mask;
 }
 
-pub trait FloatConsts {
+pub trait FloatConsts where Self: Copy {
     const INFINITY: Self;
     const NEG_INFINITY: Self;
     const NAN: Self;
