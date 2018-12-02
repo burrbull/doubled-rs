@@ -17,16 +17,21 @@ macro_rules! impl_f2_f64 {
         fn vupper_vd_vd(d: $f64x) -> $f64x {
             $f64x::from_bits($u64x::from_bits(d) & $u64x::from_u32((0xffffffff, 0xf8000000)))
         }
-        
+        impl FloatConsts for $f64x {
+            const INFINITY: Self = Self::splat(core::f64::INFINITY);
+            const NEG_INFINITY: Self = Self::splat(core::f64::NEG_INFINITY);
+            const NAN: Self = Self::splat(core::f64::NAN);
+        }
+
         impl IsInf for $f64x {
             type Mask = $m64x;
             #[inline]
             fn is_infinite(self) -> Self::Mask {
-                self.abs().eq(Self::splat(SLEEF_INFINITY))
+                self.eq(Self::INFINITY) | self.eq(Self::NEG_INFINITY)
             }
             #[inline]
             fn ispinf(self) -> Self::Mask {
-                self.eq(Self::splat(SLEEF_INFINITY))
+                self.eq(Self::INFINITY)
             }
         }
         impl IsNan for $f64x {
@@ -241,23 +246,19 @@ macro_rules! impl_f2_f64 {
         }
 
         impl CheckOrder for Doubled<$f64x> {
-            fn check_order(self, _other: Self) {
-            }
+            fn check_order(self, _other: Self) {}
         }
 
         impl CheckOrder<$f64x> for Doubled<$f64x> {
-            fn check_order(self, _other: $f64x) {
-            }
+            fn check_order(self, _other: $f64x) {}
         }
 
         impl CheckOrder<Doubled<$f64x>> for $f64x {
-            fn check_order(self, _other: Doubled<$f64x>) {
-            }
+            fn check_order(self, _other: Doubled<$f64x>) {}
         }
 
         impl CheckOrder for $f64x {
-            fn check_order(self, _other: Self) {
-            }
+            fn check_order(self, _other: Self) {}
         }
 
         impl AsDoubled for $f64x {

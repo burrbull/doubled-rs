@@ -74,7 +74,6 @@ impl Doubled<f64> {
     }
 }
 
-
 impl CheckOrder for Doubled<f64> {
     fn check_order(self, other: Self) {
         debug_assert!(
@@ -246,4 +245,3 @@ impl RecPre<Doubled<f64>> for f64 {
         Doubled::new(q0, t * (1. - dh * th - dh * tl - dl * th - dl * tl))
     }
 }
-
