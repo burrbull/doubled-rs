@@ -17,27 +17,6 @@ macro_rules! impl_f2_f64 {
         fn vupper_vd_vd(d: $f64x) -> $f64x {
             $f64x::from_bits($u64x::from_bits(d) & $u64x::from_u32((0x_ffff_ffff, 0x_f800_0000)))
         }
-        impl FloatConsts for $f64x {
-            const INFINITY: Self = Self::splat(core::f64::INFINITY);
-            const NEG_INFINITY: Self = Self::splat(core::f64::NEG_INFINITY);
-            const NAN: Self = Self::splat(core::f64::NAN);
-        }
-
-        impl IsInf for $f64x {
-            type Mask = $m64x;
-            #[inline]
-            fn is_infinite(self) -> Self::Mask {
-                self.eq(Self::INFINITY) | self.eq(Self::NEG_INFINITY)
-            }
-        }
-
-        impl IsNan for $f64x {
-            type Mask = $m64x;
-            #[inline]
-            fn is_nan(self) -> Self::Mask {
-                self.ne(self)
-            }
-        }
 
         impl FromMask for Doubled<$f64x> {
             type Mask = $u64x;

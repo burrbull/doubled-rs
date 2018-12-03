@@ -7,28 +7,6 @@ macro_rules! impl_f2_f32 {
             ($u32x::from_bits(d) & $u32x::splat(0x_fff_ff000)).into_bits()
         }
 
-        impl FloatConsts for $f32x {
-            const INFINITY: Self = Self::splat(core::f32::INFINITY);
-            const NEG_INFINITY: Self = Self::splat(core::f32::NEG_INFINITY);
-            const NAN: Self = Self::splat(core::f32::NAN);
-        }
-
-        impl IsInf for $f32x {
-            type Mask = $m32x;
-            #[inline]
-            fn is_infinite(self) -> Self::Mask {
-                self.eq(Self::INFINITY) | self.eq(Self::NEG_INFINITY)
-            }
-        }
-
-        impl IsNan for $f32x {
-            type Mask = $m32x;
-            #[inline]
-            fn is_nan(self) -> Self::Mask {
-                self.ne(self)
-            }
-        }
-
         impl FromMask for Doubled<$f32x> {
             type Mask = $u32x;
             fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {

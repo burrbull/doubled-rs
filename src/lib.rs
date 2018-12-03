@@ -4,21 +4,6 @@
 mod f32;
 mod f64;
 
-pub trait IsInf {
-    type Mask;
-    fn is_infinite(self) -> Self::Mask;
-}
-pub trait IsNan {
-    type Mask;
-    fn is_nan(self) -> Self::Mask;
-}
-
-pub trait FloatConsts where Self: Copy {
-    const INFINITY: Self;
-    const NEG_INFINITY: Self;
-    const NAN: Self;
-}
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Doubled<T>(pub T, pub T);
 
