@@ -9,7 +9,7 @@ macro_rules! impl_f2_f64 {
                     a[2 * j] = i.0;
                     a[2 * j + 1] = i.1;
                 }
-                $u64x::from_bits(Simd::<[u32; $u64x::lanes() * 2]>::from_slice_aligned(&a))
+                $u64x::from_bits(Simd::<[u32; $u64x::lanes() * 2]>::from_slice_unaligned(&a))
             }
         }
 

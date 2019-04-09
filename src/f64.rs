@@ -77,7 +77,8 @@ impl Doubled<f64> {
 impl CheckOrder for Doubled<f64> {
     fn check_order(self, other: Self) {
         debug_assert!(
-            self.0.check()
+            self.0 == 0.
+                || self.0.check()
                 || other.0.check()
                 || fabsk(self.0) >= fabsk(other.0)
                 || ((fabsk(self.0 + other.0) <= fabsk(self.0))
