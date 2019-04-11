@@ -1,10 +1,12 @@
-macro_rules! impl_f2_f32 {
+macro_rules! impl_doubled_f32 {
     ($f32x:ident, $u32x:ident, $m32x:ident) => {
         use crate::*;
 
-        #[inline]
-        fn vupper_vf_vf(d: $f32x) -> $f32x {
-            ($u32x::from_bits(d) & $u32x::splat(0x_fff_ff000)).into_bits()
+        impl Upper for $f32x {
+            #[inline]
+            fn upper(self) -> Self {
+                ($u32x::from_bits(self) & $u32x::splat(0x_fff_ff000)).into_bits()
+            }
         }
 
         impl FromMask for Doubled<$f32x> {
@@ -51,7 +53,7 @@ macro_rules! impl_f2_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             pub fn square(self) -> Self {
-                let xh = vupper_vf_vf(self.0);
+                let xh = self.0.upper();
                 let xl = self.0 - xh;
                 let r0 = self.0 * self.0;
 
@@ -70,7 +72,7 @@ macro_rules! impl_f2_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             pub fn square_as_f(self) -> $f32x {
-                let xh = vupper_vf_vf(self.0);
+                let xh = self.0.upper();
                 let xl = self.0 - xh;
                 xh * self.1 + xh * self.1 + xl * xl + (xh * xl + xh * xl) + xh * xh
             }
@@ -98,9 +100,9 @@ macro_rules! impl_f2_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             pub fn mul_as_f(self, other: Self) -> $f32x {
-                let xh = vupper_vf_vf(self.0);
+                let xh = self.0.upper();
                 let xl = self.0 - xh;
-                let yh = vupper_vf_vf(other.0);
+                let yh = other.0.upper();
                 let yl = other.0 - yh;
                 self.1 * yh + xh * other.1 + xl * yl + xh * yl + xl * yh + xh * yh
             }
@@ -148,9 +150,9 @@ macro_rules! impl_f2_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             fn mul(self, other: Self) -> Self {
-                let xh = vupper_vf_vf(self.0);
+                let xh = self.0.upper();
                 let xl = self.0 - xh;
-                let yh = vupper_vf_vf(other.0);
+                let yh = other.0.upper();
                 let yl = other.0 - yh;
                 let r0 = self.0 * other.0;
 
@@ -175,9 +177,9 @@ macro_rules! impl_f2_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             fn mul(self, other: $f32x) -> Self {
-                let xh = vupper_vf_vf(self.0);
+                let xh = self.0.upper();
                 let xl = self.0 - xh;
-                let yh = vupper_vf_vf(other);
+                let yh = other.upper();
                 let yl = other - yh;
                 let r0 = self.0 * other;
 
@@ -208,11 +210,11 @@ macro_rules! impl_f2_f32 {
             #[inline]
             fn div(self, other: Self) -> Self {
                 let t = other.0.recpre();
-                let dh = vupper_vf_vf(other.0);
+                let dh = other.0.upper();
                 let dl = other.0 - dh;
-                let th = vupper_vf_vf(t);
+                let th = t.upper();
                 let tl = t - th;
-                let nhh = vupper_vf_vf(self.0);
+                let nhh = self.0.upper();
                 let nhl = self.0 - nhh;
 
                 let q0 = self.0 * t;
@@ -267,9 +269,9 @@ macro_rules! impl_f2_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             fn mul_as_doubled(self, other: Self) -> Doubled<Self> {
-                let xh = vupper_vf_vf(self);
+                let xh = self.upper();
                 let xl = self - xh;
-                let yh = vupper_vf_vf(other);
+                let yh = other.upper();
                 let yl = other - yh;
                 let r0 = self * other;
 
@@ -292,9 +294,9 @@ macro_rules! impl_f2_f32 {
             #[inline]
             fn recpre(self) -> Self {
                 let t = self.0.recpre();
-                let dh = vupper_vf_vf(self.0);
+                let dh = self.0.upper();
                 let dl = self.0 - dh;
-                let th = vupper_vf_vf(t);
+                let th = t.upper();
                 let tl = t - th;
                 let q0 = t;
 
@@ -319,9 +321,9 @@ macro_rules! impl_f2_f32 {
             #[inline]
             fn recpre_as_doubled(self) -> Doubled<Self> {
                 let t = self.recpre();
-                let dh = vupper_vf_vf(self);
+                let dh = self.upper();
                 let dl = self - dh;
-                let th = vupper_vf_vf(t);
+                let th = t.upper();
                 let tl = t - th;
                 let q0 = t;
 
@@ -338,20 +340,20 @@ macro_rules! impl_f2_f32 {
 
 pub mod f32x2 {
     use packed_simd::*;
-    impl_f2_f32!(f32x2, u32x2, m32x2);
+    impl_doubled_f32!(f32x2, u32x2, m32x2);
 }
 
 pub mod f32x4 {
     use packed_simd::*;
-    impl_f2_f32!(f32x4, u32x4, m32x4);
+    impl_doubled_f32!(f32x4, u32x4, m32x4);
 }
 
 pub mod f32x8 {
     use packed_simd::*;
-    impl_f2_f32!(f32x8, u32x8, m32x8);
+    impl_doubled_f32!(f32x8, u32x8, m32x8);
 }
 
 pub mod f32x16 {
     use packed_simd::*;
-    impl_f2_f32!(f32x16, u32x16, m32x16);
+    impl_doubled_f32!(f32x16, u32x16, m32x16);
 }

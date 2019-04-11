@@ -1,5 +1,12 @@
 use super::*;
 
+impl Upper for f64 {
+    #[inline]
+    fn upper(self) -> Self {
+        f64::from_bits(self.to_bits() & 0x_ffff_ffff_f800_0000)
+    }
+}
+
 impl FromMask for Doubled<f64> {
     type Mask = u64;
     fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
@@ -11,11 +18,6 @@ impl Check for f64 {
     fn check(self) -> bool {
         self.is_infinite() || self.is_nan()
     }
-}
-
-#[inline]
-fn upper(d: f64) -> f64 {
-    f64::from_bits(d.to_bits() & 0x_ffff_ffff_f800_0000)
 }
 
 #[inline]
@@ -48,7 +50,7 @@ impl Doubled<f64> {
 
     #[inline]
     pub fn square(self) -> Self {
-        let xh = upper(self.0);
+        let xh = self.0.upper();
         let xl = self.0 - xh;
         let r0 = self.0 * self.0;
         Self::new(
@@ -59,16 +61,16 @@ impl Doubled<f64> {
 
     #[inline]
     pub fn square_as_f(self) -> f64 {
-        let xh = upper(self.0);
+        let xh = self.0.upper();
         let xl = self.0 - xh;
         xh * self.1 + xh * self.1 + xl * xl + (xh * xl + xh * xl) + xh * xh
     }
 
     #[inline]
     pub fn mul_as_f(self, other: Self) -> f64 {
-        let xh = upper(self.0);
+        let xh = self.0.upper();
         let xl = self.0 - xh;
-        let yh = upper(other.0);
+        let yh = other.0.upper();
         let yl = other.0 - yh;
         self.1 * yh + xh * other.1 + xl * yl + xh * yl + xl * yh + xh * yh
     }
@@ -148,9 +150,9 @@ impl core::ops::Mul for Doubled<f64> {
     type Output = Self;
     #[inline]
     fn mul(self, other: Self) -> Self {
-        let xh = upper(self.0);
+        let xh = self.0.upper();
         let xl = self.0 - xh;
-        let yh = upper(other.0);
+        let yh = other.0.upper();
         let yl = other.0 - yh;
         let r0 = self.0 * other.0;
         Self::new(
@@ -164,9 +166,9 @@ impl core::ops::Mul<f64> for Doubled<f64> {
     type Output = Self;
     #[inline]
     fn mul(self, other: f64) -> Self {
-        let xh = upper(self.0);
+        let xh = self.0.upper();
         let xl = self.0 - xh;
-        let yh = upper(other);
+        let yh = other.upper();
         let yl = other - yh;
         let r0 = self.0 * other;
         Self::new(
@@ -181,11 +183,11 @@ impl core::ops::Div for Doubled<f64> {
     #[inline]
     fn div(self, other: Self) -> Self {
         let t = 1. / other.0;
-        let dh = upper(other.0);
+        let dh = other.0.upper();
         let dl = other.0 - dh;
-        let th = upper(t);
+        let th = t.upper();
         let tl = t - th;
-        let nhh = upper(self.0);
+        let nhh = self.0.upper();
         let nhl = self.0 - nhh;
 
         let q0 = self.0 * t;
@@ -211,9 +213,9 @@ impl AsDoubled for f64 {
 impl MulAsDoubled for f64 {
     #[inline]
     fn mul_as_doubled(self, other: Self) -> Doubled<Self> {
-        let xh = upper(self);
+        let xh = self.upper();
         let xl = self - xh;
-        let yh = upper(other);
+        let yh = other.upper();
         let yl = other - yh;
         let r0 = self * other;
         Doubled::new(r0, xh * yh - r0 + xl * yh + xh * yl + xl * yl)
@@ -223,9 +225,9 @@ impl MulAsDoubled for f64 {
 impl RecPre for Doubled<f64> {
     fn recpre(self) -> Doubled<f64> {
         let t = 1. / self.0;
-        let dh = upper(self.0);
+        let dh = self.0.upper();
         let dl = self.0 - dh;
-        let th = upper(t);
+        let th = t.upper();
         let tl = t - th;
         let q0 = t;
         Self::new(
@@ -238,9 +240,9 @@ impl RecPre for Doubled<f64> {
 impl RecPre<Doubled<f64>> for f64 {
     fn recpre(self) -> Doubled<f64> {
         let t = 1. / self;
-        let dh = upper(self);
+        let dh = self.upper();
         let dl = self - dh;
-        let th = upper(t);
+        let th = t.upper();
         let tl = t - th;
         let q0 = t;
         Doubled::new(q0, t * (1. - dh * th - dh * tl - dl * th - dl * tl))

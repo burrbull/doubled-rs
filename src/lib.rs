@@ -57,29 +57,18 @@ pub trait CheckOrder<T = Self> {
     fn check_order(self, other: T);
 }
 
-pub trait AsDoubled
-where
-    Self: Sized,
-{
+pub trait AsDoubled: Sized {
     fn as_doubled(self) -> Doubled<Self>;
 }
 
-pub trait AddAsDoubled
-where
-    Self: Sized,
-{
+pub trait AddAsDoubled: Sized {
     fn add_as_doubled(self, other: Self) -> Doubled<Self>;
 }
-pub trait AddCheckedAsDoubled: CheckOrder<Self>
-where
-    Self: Sized,
-{
+
+pub trait AddCheckedAsDoubled: CheckOrder<Self> + Sized {
     fn add_checked_as_doubled(self, other: Self) -> Doubled<Self>;
 }
-pub trait MulAsDoubled
-where
-    Self: Sized,
-{
+pub trait MulAsDoubled: Sized {
     fn mul_as_doubled(self, other: Self) -> Doubled<Self>;
 }
 
@@ -87,10 +76,7 @@ pub trait RecPre<T = Self> {
     fn recpre(self) -> T;
 }
 
-pub trait RecPreAsDoubled
-where
-    Self: Sized,
-{
+pub trait RecPreAsDoubled: Sized {
     fn recpre_as_doubled(self) -> Doubled<Self>;
 }
 
@@ -312,6 +298,10 @@ where
         let r0 = self + other;
         Doubled::new(r0, self - r0 + other)
     }
+}
+
+pub trait Upper: Sized {
+    fn upper(self) -> Self;
 }
 
 pub trait FromU32 {
