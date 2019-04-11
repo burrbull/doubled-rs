@@ -12,7 +12,7 @@ where
     T: Sized,
 {
     #[inline]
-    pub fn new(x0: T, x1: T) -> Self {
+    pub const fn new(x0: T, x1: T) -> Self {
         Doubled(x0, x1)
     }
 }
