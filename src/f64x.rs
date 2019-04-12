@@ -1,54 +1,46 @@
 macro_rules! impl_doubled_f64 {
-    ($f64x:ident, $u64x:ident, $m64x:ident) => {
+    ($size:literal) => {
         use crate::*;
 
-        impl Upper for $f64x {
+        type F64x = packed_simd::Simd<[f64; $size]>;
+        type U64x = packed_simd::Simd<[u64; $size]>;
+
+        impl Upper for F64x {
             #[inline]
             fn upper(self) -> Self {
-                $f64x::from_bits($u64x::from_bits(self) & $u64x::from_u32((0x_ffff_ffff, 0x_f800_0000)))
+                F64x::from_bits(U64x::from_bits(self) & U64x::splat((0x_ffff_ffff << 32) + 0x_f800_0000))
             }
         }
 
-        impl FromU32 for $u64x {
-            fn from_u32(i: (u32, u32)) -> Self {
-                let mut a = [0_u32; $u64x::lanes() * 2];
-                for j in 0..$u64x::lanes() {
-                    a[2 * j] = i.0;
-                    a[2 * j + 1] = i.1;
-                }
-                $u64x::from_bits(Simd::<[u32; $u64x::lanes() * 2]>::from_slice_unaligned(&a))
-            }
-        }
-
-        impl FromMask for Doubled<$f64x> {
-            type Mask = $u64x;
+        impl FromMask for Doubled<F64x> {
+            type Mask = U64x;
             fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
-                Self::new($f64x::from_bits(u0), $f64x::from_bits(u1))
+                Self::new(F64x::from_bits(u0), F64x::from_bits(u1))
             }
         }
 
-        impl core::convert::From<$f64x> for Doubled<$f64x> {
+        impl core::convert::From<F64x> for Doubled<F64x> {
             #[inline]
-            fn from(f: $f64x) -> Self {
-                Self::new(f, $f64x::splat(0.))
+            fn from(f: F64x) -> Self {
+                Self::new(f, F64x::splat(0.))
             }
         }
 
-        impl core::convert::From<Doubled<$f64x>> for $f64x {
+        impl core::convert::From<Doubled<F64x>> for F64x {
             #[inline]
-            fn from(f: Doubled<$f64x>) -> Self {
+            fn from(f: Doubled<F64x>) -> Self {
                 f.0 + f.1
             }
         }
 
-        impl Doubled<$f64x> {
+        impl Doubled<F64x> {
             #[inline]
             pub fn abs(self) -> Self {
                 Self::new(
                     self.0.abs(),
-                    $f64x::from_bits(
-                        $u64x::from_bits(self.1)
-                            ^ ($u64x::from_bits(self.0) & $u64x::from_bits($f64x::splat(-0.))),
+                    F64x::from_bits(
+                        U64x::from_bits(self.1)
+                            ^ (U64x::from_bits(self.0) & U64x::from_bits(F64x::splat(-0.))),
                     ),
                 )
             }
@@ -76,12 +68,12 @@ macro_rules! impl_doubled_f64 {
 
             #[cfg(target_feature = "fma")]
             #[inline]
-            pub fn square_as_f(self) -> $f64x {
+            pub fn square_as_f(self) -> F64x {
                 self.0.mul_adde(self.0, self.0 * self.1 + self.0 * self.1)
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            pub fn square_as_f(self) -> $f64x {
+            pub fn square_as_f(self) -> F64x {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
 
@@ -91,18 +83,18 @@ macro_rules! impl_doubled_f64 {
             #[inline]
             pub fn sqrt(self) -> Self {
                 let t = (self.0 + self.1).sqrt();
-                ((self + t.mul_as_doubled(t)) * t.recpre_as_doubled()).scale($f64x::splat(0.5))
+                ((self + t.mul_as_doubled(t)) * t.recpre_as_doubled()).scale(F64x::splat(0.5))
             }
 
             #[cfg(target_feature = "fma")]
             #[inline]
-            pub fn mul_as_f(self, other: Self) -> $f64x {
+            pub fn mul_as_f(self, other: Self) -> F64x {
                 self.0
                     .mul_adde(other.0, self.1.mul_adde(other.0, self.0 * other.1))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            pub fn mul_as_f(self, other: Self) -> $f64x {
+            pub fn mul_as_f(self, other: Self) -> F64x {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
                 let yh = other.0.upper();
@@ -112,13 +104,13 @@ macro_rules! impl_doubled_f64 {
             }
         }
 
-        impl core::convert::From<(f64, f64)> for Doubled<$f64x> {
+        impl core::convert::From<(f64, f64)> for Doubled<F64x> {
             fn from(f: (f64, f64)) -> Self {
-                Self::new($f64x::splat(f.0), $f64x::splat(f.1))
+                Self::new(F64x::splat(f.0), F64x::splat(f.1))
             }
         }
 
-        impl core::ops::Add<Doubled<$f64x>> for $f64x {
+        impl core::ops::Add<Doubled<F64x>> for F64x {
             type Output = Doubled<Self>;
             #[inline]
             fn add(self, other: Doubled<Self>) -> Self::Output {
@@ -128,7 +120,7 @@ macro_rules! impl_doubled_f64 {
             }
         }
 
-        impl core::ops::Mul for Doubled<$f64x> {
+        impl core::ops::Mul for Doubled<F64x> {
             type Output = Self;
             #[cfg(target_feature = "fma")]
             #[inline]
@@ -163,17 +155,17 @@ macro_rules! impl_doubled_f64 {
             }
         }
 
-        impl core::ops::Mul<$f64x> for Doubled<$f64x> {
+        impl core::ops::Mul<F64x> for Doubled<F64x> {
             type Output = Self;
             #[cfg(target_feature = "fma")]
             #[inline]
-            fn mul(self, other: $f64x) -> Self {
+            fn mul(self, other: F64x) -> Self {
                 let r0 = self.0 * other;
                 Self::new(r0, self.1.mul_adde(other, self.0.mul_sube(other, r0)))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            fn mul(self, other: $f64x) -> Self {
+            fn mul(self, other: F64x) -> Self {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
                 let yh = other.upper();
@@ -186,7 +178,7 @@ macro_rules! impl_doubled_f64 {
             }
         }
 
-        impl core::ops::Div for Doubled<$f64x> {
+        impl core::ops::Div for Doubled<F64x> {
             type Output = Self;
             #[cfg(target_feature = "fma")]
             #[inline]
@@ -195,7 +187,7 @@ macro_rules! impl_doubled_f64 {
 
                 let q0 = self.0 * t;
                 let u = t.mul_sube(self.0, q0);
-                let mut q1 = other.1.fmanp(t, other.0.fmanp(t, $f64x::splat(1.)));
+                let mut q1 = other.1.fmanp(t, other.0.fmanp(t, F64x::splat(1.)));
                 q1 = q0.mul_adde(q1, self.1.mul_adde(t, u));
 
                 Self::new(q0, q1)
@@ -217,36 +209,36 @@ macro_rules! impl_doubled_f64 {
                     + nhh * tl
                     + nhl * th
                     + nhl * tl
-                    + q0 * ($f64x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl);
+                    + q0 * (F64x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl);
 
                 Self::new(q0, t.mul_add(self.1 - q0 * other.1, u))
             }
         }
 
-        impl CheckOrder for Doubled<$f64x> {
+        impl CheckOrder for Doubled<F64x> {
             fn check_order(self, _other: Self) {}
         }
 
-        impl CheckOrder<$f64x> for Doubled<$f64x> {
-            fn check_order(self, _other: $f64x) {}
+        impl CheckOrder<F64x> for Doubled<F64x> {
+            fn check_order(self, _other: F64x) {}
         }
 
-        impl CheckOrder<Doubled<$f64x>> for $f64x {
-            fn check_order(self, _other: Doubled<$f64x>) {}
+        impl CheckOrder<Doubled<F64x>> for F64x {
+            fn check_order(self, _other: Doubled<F64x>) {}
         }
 
-        impl CheckOrder for $f64x {
+        impl CheckOrder for F64x {
             fn check_order(self, _other: Self) {}
         }
 
-        impl AsDoubled for $f64x {
+        impl AsDoubled for F64x {
             #[inline]
             fn as_doubled(self) -> Doubled<Self> {
                 Doubled::new(self, Self::splat(0.))
             }
         }
 
-        impl MulAsDoubled for $f64x {
+        impl MulAsDoubled for F64x {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn mul_as_doubled(self, other: Self) -> Doubled<Self> {
@@ -265,16 +257,16 @@ macro_rules! impl_doubled_f64 {
             }
         }
 
-        impl RecPre for Doubled<$f64x> {
+        impl RecPre for Doubled<F64x> {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn recpre(self) -> Self {
                 let q0 = self.0.recpre();
-                Self::new(q0, q0 * self.1.fmanp(q0, self.0.fmanp(q0, $f64x::splat(1))))
+                Self::new(q0, q0 * self.1.fmanp(q0, self.0.fmanp(q0, F64x::splat(1))))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            fn recpre(self) -> Doubled<$f64x> {
+            fn recpre(self) -> Doubled<F64x> {
                 let t = self.0.recpre();
                 let dh = self.0.upper();
                 let dl = self.0 - dh;
@@ -283,12 +275,12 @@ macro_rules! impl_doubled_f64 {
                 let q0 = t;
                 Self::new(
                     q0,
-                    t * ($f64x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl - self.1 * t),
+                    t * (F64x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl - self.1 * t),
                 )
             }
         }
 
-        impl RecPreAsDoubled for $f64x {
+        impl RecPreAsDoubled for F64x {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn recpre_as_doubled(self) -> Doubled<Self> {
@@ -315,15 +307,15 @@ macro_rules! impl_doubled_f64 {
 
 pub mod f64x2 {
     use packed_simd::*;
-    impl_doubled_f64!(f64x2, u64x2, m64x2);
+    impl_doubled_f64!(2);
 }
 
 pub mod f64x4 {
     use packed_simd::*;
-    impl_doubled_f64!(f64x4, u64x4, m64x4);
+    impl_doubled_f64!(4);
 }
 
 pub mod f64x8 {
     use packed_simd::*;
-    impl_doubled_f64!(f64x8, u64x8, m64x8);
+    impl_doubled_f64!(8);
 }

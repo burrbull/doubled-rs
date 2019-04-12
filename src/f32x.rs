@@ -1,42 +1,45 @@
 macro_rules! impl_doubled_f32 {
-    ($f32x:ident, $u32x:ident, $m32x:ident) => {
+    ($size:literal) => {
         use crate::*;
 
-        impl Upper for $f32x {
+        type F32x = packed_simd::Simd<[f32; $size]>;
+        type U32x = packed_simd::Simd<[u32; $size]>;
+
+        impl Upper for F32x {
             #[inline]
             fn upper(self) -> Self {
-                ($u32x::from_bits(self) & $u32x::splat(0x_fff_ff000)).into_bits()
+                (U32x::from_bits(self) & U32x::splat(0x_fff_ff000)).into_bits()
             }
         }
 
-        impl FromMask for Doubled<$f32x> {
-            type Mask = $u32x;
+        impl FromMask for Doubled<F32x> {
+            type Mask = U32x;
             fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
-                Self::new($f32x::from_bits(u0), $f32x::from_bits(u1))
+                Self::new(F32x::from_bits(u0), F32x::from_bits(u1))
             }
         }
 
-        impl core::convert::From<$f32x> for Doubled<$f32x> {
+        impl core::convert::From<F32x> for Doubled<F32x> {
             #[inline]
-            fn from(f: $f32x) -> Self {
-                Self::new(f, $f32x::splat(0.))
+            fn from(f: F32x) -> Self {
+                Self::new(f, F32x::splat(0.))
             }
         }
 
-        impl core::convert::From<Doubled<$f32x>> for $f32x {
+        impl core::convert::From<Doubled<F32x>> for F32x {
             #[inline]
-            fn from(f: Doubled<$f32x>) -> Self {
+            fn from(f: Doubled<F32x>) -> Self {
                 f.0 + f.1
             }
         }
 
-        impl Doubled<$f32x> {
+        impl Doubled<F32x> {
             #[inline]
             pub fn abs(self) -> Self {
                 Self::new(
                     self.0.abs(),
-                    ($u32x::from_bits(self.1)
-                        ^ ($u32x::from_bits(self.0) & $u32x::from_bits($f32x::splat(-0.))))
+                    (U32x::from_bits(self.1)
+                        ^ (U32x::from_bits(self.0) & U32x::from_bits(F32x::splat(-0.))))
                     .into_bits(),
                 )
             }
@@ -66,12 +69,12 @@ macro_rules! impl_doubled_f32 {
 
             #[cfg(target_feature = "fma")]
             #[inline]
-            pub fn square_as_f(self) -> $f32x {
+            pub fn square_as_f(self) -> F32x {
                 self.0.mul_adde(self.0, self.0 * self.1 + self.0 * self.1)
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            pub fn square_as_f(self) -> $f32x {
+            pub fn square_as_f(self) -> F32x {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
                 xh * self.1 + xh * self.1 + xl * xl + (xh * xl + xh * xl) + xh * xh
@@ -82,24 +85,24 @@ macro_rules! impl_doubled_f32 {
             pub fn sqrt(self) -> Self {
                 let x = (self.0 + self.1).rsqrte();
                 let r = self * x;
-                (r * (r * x + $f32x::splat(-3.0))).scale($f32x::splat(-0.5))
+                (r * (r * x + F32x::splat(-3.0))).scale(F32x::splat(-0.5))
             }
             #[cfg(not(feature = "enable_recsqrt_sp"))]
             #[inline]
             pub fn sqrt(self) -> Self {
                 let t = (self.0 + self.1).sqrt();
-                ((self + t.mul_as_doubled(t)) * t.recpre()).scale($f32x::splat(0.5))
+                ((self + t.mul_as_doubled(t)) * t.recpre()).scale(F32x::splat(0.5))
             }
 
             #[cfg(target_feature = "fma")]
             #[inline]
-            pub fn mul_as_f(self, other: Self) -> $f32x {
+            pub fn mul_as_f(self, other: Self) -> F32x {
                 self.0
                     .mul_adde(other.0, self.1.mul_adde(other.0, self.0 * other.1))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            pub fn mul_as_f(self, other: Self) -> $f32x {
+            pub fn mul_as_f(self, other: Self) -> F32x {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
                 let yh = other.0.upper();
@@ -108,32 +111,32 @@ macro_rules! impl_doubled_f32 {
             }
         }
 
-        impl core::convert::From<f64> for Doubled<$f32x> {
+        impl core::convert::From<f64> for Doubled<F32x> {
             fn from(d: f64) -> Self {
                 Self::new(
-                    $f32x::splat(d as f32),
-                    $f32x::splat((d as f32) - (d as f32)),
+                    F32x::splat(d as f32),
+                    F32x::splat((d as f32) - (d as f32)),
                 )
             }
         }
 
-        impl core::convert::From<(f32, f32)> for Doubled<$f32x> {
+        impl core::convert::From<(f32, f32)> for Doubled<F32x> {
             fn from(f: (f32, f32)) -> Self {
-                Self::new($f32x::splat(f.0), $f32x::splat(f.1))
+                Self::new(F32x::splat(f.0), F32x::splat(f.1))
             }
         }
 
-        impl core::ops::Add<Doubled<$f32x>> for $f32x {
-            type Output = Doubled<$f32x>;
+        impl core::ops::Add<Doubled<F32x>> for F32x {
+            type Output = Doubled<F32x>;
             #[inline]
-            fn add(self, other: Doubled<$f32x>) -> Self::Output {
+            fn add(self, other: Doubled<F32x>) -> Self::Output {
                 let r0 = self + other.0;
                 let v = r0 - self;
                 Doubled::new(r0, self - (r0 - v) + (other.0 - v) + other.1)
             }
         }
 
-        impl core::ops::Mul for Doubled<$f32x> {
+        impl core::ops::Mul for Doubled<F32x> {
             type Output = Self;
             #[cfg(target_feature = "fma")]
             #[inline]
@@ -166,17 +169,17 @@ macro_rules! impl_doubled_f32 {
             }
         }
 
-        impl core::ops::Mul<$f32x> for Doubled<$f32x> {
+        impl core::ops::Mul<F32x> for Doubled<F32x> {
             type Output = Self;
             #[cfg(target_feature = "fma")]
             #[inline]
-            fn mul(self, other: $f32x) -> Self {
+            fn mul(self, other: F32x) -> Self {
                 let r0 = self.0 * other;
                 Self::new(r0, self.1.mul_adde(other, self.0.fmanp(other, r0)))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
-            fn mul(self, other: $f32x) -> Self {
+            fn mul(self, other: F32x) -> Self {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
                 let yh = other.upper();
@@ -192,7 +195,7 @@ macro_rules! impl_doubled_f32 {
             }
         }
 
-        impl core::ops::Div for Doubled<$f32x> {
+        impl core::ops::Div for Doubled<F32x> {
             type Output = Self;
             #[cfg(target_feature = "fma")]
             #[inline]
@@ -201,7 +204,7 @@ macro_rules! impl_doubled_f32 {
 
                 let q0 = self.0 * t;
                 let u = t.mul_sube(self.0, q0);
-                let mut q1 = other.1.fmanp(t, other.0.fmanp(t, $f32x::splat(1)));
+                let mut q1 = other.1.fmanp(t, other.0.fmanp(t, F32x::splat(1)));
                 q1 = q0.mul_adde(q1, self.1.mul_adde(t, u));
 
                 Self::new(q0, q1)
@@ -219,7 +222,7 @@ macro_rules! impl_doubled_f32 {
 
                 let q0 = self.0 * t;
 
-                let mut w = $f32x::splat(-1.);
+                let mut w = F32x::splat(-1.);
                 w = dh.mul_add(th, w);
                 w = dh.mul_add(tl, w);
                 w = dl.mul_add(th, w);
@@ -236,30 +239,30 @@ macro_rules! impl_doubled_f32 {
             }
         }
 
-        impl CheckOrder for Doubled<$f32x> {
+        impl CheckOrder for Doubled<F32x> {
             fn check_order(self, _other: Self) {}
         }
 
-        impl CheckOrder<$f32x> for Doubled<$f32x> {
-            fn check_order(self, _other: $f32x) {}
+        impl CheckOrder<F32x> for Doubled<F32x> {
+            fn check_order(self, _other: F32x) {}
         }
 
-        impl CheckOrder<Doubled<$f32x>> for $f32x {
-            fn check_order(self, _other: Doubled<$f32x>) {}
+        impl CheckOrder<Doubled<F32x>> for F32x {
+            fn check_order(self, _other: Doubled<F32x>) {}
         }
 
-        impl CheckOrder for $f32x {
+        impl CheckOrder for F32x {
             fn check_order(self, _other: Self) {}
         }
 
-        impl AsDoubled for $f32x {
+        impl AsDoubled for F32x {
             #[inline]
             fn as_doubled(self) -> Doubled<Self> {
                 Doubled::new(self, Self::splat(0.))
             }
         }
 
-        impl MulAsDoubled for $f32x {
+        impl MulAsDoubled for F32x {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn mul_as_doubled(self, other: Self) -> Doubled<Self> {
@@ -283,12 +286,12 @@ macro_rules! impl_doubled_f32 {
             }
         }
 
-        impl RecPre for Doubled<$f32x> {
+        impl RecPre for Doubled<F32x> {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn recpre(self) -> Self {
                 let q0 = self.0.recpre();
-                Self::new(q0, q0 * self.1.fmanp(q0, self.0.fmanp(q0, $f32x::splat(1))))
+                Self::new(q0, q0 * self.1.fmanp(q0, self.0.fmanp(q0, F32x::splat(1))))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
@@ -300,7 +303,7 @@ macro_rules! impl_doubled_f32 {
                 let tl = t - th;
                 let q0 = t;
 
-                let mut u = $f32x::splat(-1.);
+                let mut u = F32x::splat(-1.);
                 u = dh.mul_add(th, u);
                 u = dh.mul_add(tl, u);
                 u = dl.mul_add(th, u);
@@ -310,7 +313,7 @@ macro_rules! impl_doubled_f32 {
             }
         }
 
-        impl RecPreAsDoubled for $f32x {
+        impl RecPreAsDoubled for F32x {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn recpre_as_doubled(self) -> Doubled<Self> {
@@ -340,20 +343,20 @@ macro_rules! impl_doubled_f32 {
 
 pub mod f32x2 {
     use packed_simd::*;
-    impl_doubled_f32!(f32x2, u32x2, m32x2);
+    impl_doubled_f32!(2);
 }
 
 pub mod f32x4 {
     use packed_simd::*;
-    impl_doubled_f32!(f32x4, u32x4, m32x4);
+    impl_doubled_f32!(4);
 }
 
 pub mod f32x8 {
     use packed_simd::*;
-    impl_doubled_f32!(f32x8, u32x8, m32x8);
+    impl_doubled_f32!(8);
 }
 
 pub mod f32x16 {
     use packed_simd::*;
-    impl_doubled_f32!(f32x16, u32x16, m32x16);
+    impl_doubled_f32!(16);
 }

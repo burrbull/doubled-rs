@@ -304,10 +304,6 @@ pub trait Upper: Sized {
     fn upper(self) -> Self;
 }
 
-pub trait FromU32 {
-    fn from_u32(i: (u32, u32)) -> Self;
-}
-
 #[cfg(feature = "packed_simd")]
 pub mod f32x;
 #[cfg(feature = "packed_simd")]

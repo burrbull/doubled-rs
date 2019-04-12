@@ -142,7 +142,7 @@ impl core::ops::Add<Doubled<f64>> for f64 {
     fn add(self, other: Doubled<f64>) -> Self::Output {
         let r0 = self + other.0;
         let v = r0 - self; // == other.0
-        Doubled::new(r0, (self - (r0 - v)) + (other.0 - v) + other.1) // [other.0+self, other.1]
+        Doubled::new(r0, self - (r0 - v) + (other.0 - v) + other.1) // [other.0+self, other.1]
     }
 }
 
