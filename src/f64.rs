@@ -85,7 +85,7 @@ impl CheckOrder for Doubled<f64> {
                 || fabsk(self.0) >= fabsk(other.0)
                 || ((fabsk(self.0 + other.0) <= fabsk(self.0))
                     && (fabsk(self.0 + other.0) <= fabsk(other.0))),
-            "[ddadd_d2_d2_d2 : {:e} {:e}]\n",
+            "Add order: [lhs.0: {:e}, rhs.0: {:e}]",
             self.0,
             other.0
         );
@@ -100,7 +100,7 @@ impl CheckOrder<f64> for Doubled<f64> {
                 || fabsk(self.0) >= fabsk(other)
                 || ((fabsk(self.0 + other) <= fabsk(self.0))
                     && (fabsk(self.0 + other) <= fabsk(other))),
-            "[ddadd_d2_d2_d : {:e} {:e}]\n",
+            "Add order: [lhs.0: {:e}, rhs: {:e}]",
             self.0,
             other
         );
@@ -115,7 +115,7 @@ impl CheckOrder<Doubled<f64>> for f64 {
                 || fabsk(self) >= fabsk(other.0)
                 || ((fabsk(self + other.0) <= fabsk(self))
                     && (fabsk(self + other.0) <= fabsk(other.0))),
-            "[ddadd_d2_d_d2 : {:e} {:e}]\n",
+            "Add order: [lhs: {:e}, rhs.0: {:e}]",
             self,
             other.0
         );
@@ -129,7 +129,7 @@ impl CheckOrder for f64 {
                 || other.check()
                 || fabsk(self) >= fabsk(other)
                 || ((fabsk(self + other) <= fabsk(self)) && (fabsk(self + other) <= fabsk(other))),
-            "[ddadd_d2_d_d : {:e}, {:e}]\n",
+            "Add order: [lhs: {:e}, rhs: {:e}]",
             self,
             other
         );
