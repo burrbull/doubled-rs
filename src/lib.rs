@@ -13,7 +13,7 @@ where
 {
     #[inline]
     pub const fn new(x0: T, x1: T) -> Self {
-        Doubled(x0, x1)
+        Self(x0, x1)
     }
 }
 
