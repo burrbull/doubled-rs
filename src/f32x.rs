@@ -91,7 +91,7 @@ macro_rules! impl_doubled_f32 {
             #[inline]
             pub fn sqrt(self) -> Self {
                 let t = (self.0 + self.1).sqrt();
-                ((self + t.mul_as_doubled(t)) * t.recpre()).scale(F32x::splat(0.5))
+                ((self + t.mul_as_doubled(t)) * t.recpre_as_doubled()).scale(F32x::splat(0.5))
             }
 
             #[cfg(target_feature = "fma")]
@@ -113,10 +113,7 @@ macro_rules! impl_doubled_f32 {
 
         impl core::convert::From<f64> for Doubled<F32x> {
             fn from(d: f64) -> Self {
-                Self::new(
-                    F32x::splat(d as f32),
-                    F32x::splat((d as f32) - (d as f32)),
-                )
+                Self::new(F32x::splat(d as f32), F32x::splat((d as f32) - (d as f32)))
             }
         }
 

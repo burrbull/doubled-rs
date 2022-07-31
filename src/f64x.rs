@@ -8,7 +8,9 @@ macro_rules! impl_doubled_f64 {
         impl Upper for F64x {
             #[inline]
             fn upper(self) -> Self {
-                F64x::from_bits(U64x::from_bits(self) & U64x::splat((0x_ffff_ffff << 32) + 0x_f800_0000))
+                F64x::from_bits(
+                    U64x::from_bits(self) & U64x::splat((0x_ffff_ffff << 32) + 0x_f800_0000),
+                )
             }
         }
 

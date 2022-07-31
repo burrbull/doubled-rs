@@ -1,4 +1,5 @@
 #![deny(warnings)]
+#![allow(clippy::wrong_self_convention)]
 #![no_std]
 
 mod f32;

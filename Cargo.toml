@@ -1,6 +1,6 @@
 [package]
 name = "doubled"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Andrey Zgarbul <zgarbul.andrey@gmail.com>"]
 description = "Dekker arithmetic"
 readme = "README.md"
