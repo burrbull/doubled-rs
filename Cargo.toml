@@ -1,11 +1,12 @@
 [package]
 name = "doubled"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Andrey Zgarbul <zgarbul.andrey@gmail.com>"]
 description = "Dekker arithmetic"
+keywords = ["math"]
 readme = "README.md"
 repository = "https://github.com/burrbull/doubled-rs"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [dependencies.packed_simd]

@@ -36,6 +36,9 @@ macro_rules! impl_doubled_f64 {
         }
 
         impl Doubled<F64x> {
+            pub const ZERO: Self = Self::new(F64x::splat(0.), F64x::splat(0.));
+            pub const ONE: Self = Self::new(F64x::splat(1.), F64x::splat(0.));
+
             #[inline]
             pub fn abs(self) -> Self {
                 Self::new(

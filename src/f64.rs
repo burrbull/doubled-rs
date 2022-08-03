@@ -40,6 +40,9 @@ impl core::convert::From<Doubled<f64>> for f64 {
 }
 
 impl Doubled<f64> {
+    pub const ZERO: Self = Self::new(0., 0.);
+    pub const ONE: Self = Self::new(1., 0.);
+
     #[inline]
     pub fn abs(self) -> Self {
         Self::new(
@@ -77,61 +80,34 @@ impl Doubled<f64> {
 }
 
 impl CheckOrder for Doubled<f64> {
+    #[inline]
     fn check_order(self, other: Self) {
-        debug_assert!(
-            self.0 == 0.
-                || self.0.check()
-                || other.0.check()
-                || fabsk(self.0) >= fabsk(other.0)
-                || ((fabsk(self.0 + other.0) <= fabsk(self.0))
-                    && (fabsk(self.0 + other.0) <= fabsk(other.0))),
-            "Add order: [lhs.0: {:e}, rhs.0: {:e}]",
-            self.0,
-            other.0
-        );
+        self.0.check_order(other.0)
     }
 }
 
 impl CheckOrder<f64> for Doubled<f64> {
+    #[inline]
     fn check_order(self, other: f64) {
-        debug_assert!(
-            self.0.check()
-                || other.check()
-                || fabsk(self.0) >= fabsk(other)
-                || ((fabsk(self.0 + other) <= fabsk(self.0))
-                    && (fabsk(self.0 + other) <= fabsk(other))),
-            "Add order: [lhs.0: {:e}, rhs: {:e}]",
-            self.0,
-            other
-        );
+        self.0.check_order(other)
     }
 }
 
 impl CheckOrder<Doubled<f64>> for f64 {
+    #[inline]
     fn check_order(self, other: Doubled<f64>) {
-        debug_assert!(
-            self.check()
-                || other.0.check()
-                || fabsk(self) >= fabsk(other.0)
-                || ((fabsk(self + other.0) <= fabsk(self))
-                    && (fabsk(self + other.0) <= fabsk(other.0))),
-            "Add order: [lhs: {:e}, rhs.0: {:e}]",
-            self,
-            other.0
-        );
+        self.check_order(other.0)
     }
 }
 
 impl CheckOrder for f64 {
+    #[inline]
     fn check_order(self, other: Self) {
         debug_assert!(
             self.check()
                 || other.check()
                 || fabsk(self) >= fabsk(other)
-                || ((fabsk(self + other) <= fabsk(self)) && (fabsk(self + other) <= fabsk(other))),
-            "Add order: [lhs: {:e}, rhs: {:e}]",
-            self,
-            other
+                || ((fabsk(self + other) <= fabsk(self)) && (fabsk(self + other) <= fabsk(other)))
         );
     }
 }

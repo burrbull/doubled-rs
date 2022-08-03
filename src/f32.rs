@@ -48,6 +48,9 @@ impl core::convert::From<f64> for Doubled<f32> {
 }
 
 impl Doubled<f32> {
+    pub const ZERO: Self = Self::new(0., 0.);
+    pub const ONE: Self = Self::new(1., 0.);
+
     #[inline]
     pub fn abs(self) -> Self {
         Self::new(
@@ -85,46 +88,30 @@ impl Doubled<f32> {
 }
 
 impl CheckOrder for Doubled<f32> {
+    #[inline]
     fn check_order(self, other: Self) {
-        debug_assert!(
-            self.0.check() || other.0.check() || fabsfk(self.0) >= fabsfk(other.0),
-            "[dfadd_f2_f2_f2 : {:e} {:e}]",
-            self.0,
-            other.0
-        );
+        self.0.check_order(other.0)
     }
 }
 
 impl CheckOrder<f32> for Doubled<f32> {
+    #[inline]
     fn check_order(self, other: f32) {
-        debug_assert!(
-            self.0.check() || other.check() || fabsfk(self.0) >= fabsfk(other),
-            "[dfadd_f2_f2_f : {:e}, {:e}]",
-            self.0,
-            other
-        );
+        self.0.check_order(other)
     }
 }
 
 impl CheckOrder<Doubled<f32>> for f32 {
+    #[inline]
     fn check_order(self, other: Doubled<f32>) {
-        debug_assert!(
-            self.check() || other.0.check() || fabsfk(self) >= fabsfk(other.0),
-            "[dfadd_f2_f_f2 : {:e}, {:e}]",
-            self,
-            other.0
-        );
+        self.check_order(other.0)
     }
 }
 
 impl CheckOrder for f32 {
+    #[inline]
     fn check_order(self, other: Self) {
-        debug_assert!(
-            self.check() || other.check() || fabsfk(self) >= fabsfk(other),
-            "[dfadd_f2_f_f : {:e}, {:e}]",
-            self,
-            other
-        );
+        debug_assert!(self.check() || other.check() || fabsfk(self) >= fabsfk(other));
     }
 }
 
