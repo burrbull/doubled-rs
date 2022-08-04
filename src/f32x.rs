@@ -34,8 +34,10 @@ macro_rules! impl_doubled_f32 {
         }
 
         impl Doubled<F32x> {
-            pub const ZERO: Self = Self::new(F32x::splat(0.), F32x::splat(0.));
-            pub const ONE: Self = Self::new(F32x::splat(1.), F32x::splat(0.));
+            #[inline]
+            pub const fn splat(value: Doubled<f32>) -> Self {
+                Self::new(F32x::splat(value.0), F32x::splat(value.1))
+            }
 
             #[inline]
             pub fn abs(self) -> Self {
@@ -116,13 +118,7 @@ macro_rules! impl_doubled_f32 {
 
         impl core::convert::From<f64> for Doubled<F32x> {
             fn from(d: f64) -> Self {
-                Self::new(F32x::splat(d as f32), F32x::splat((d as f32) - (d as f32)))
-            }
-        }
-
-        impl core::convert::From<(f32, f32)> for Doubled<F32x> {
-            fn from(f: (f32, f32)) -> Self {
-                Self::new(F32x::splat(f.0), F32x::splat(f.1))
+                Self::splat(Doubled::<f32>::from_f64(d))
             }
         }
 

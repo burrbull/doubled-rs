@@ -40,15 +40,13 @@ impl core::convert::From<Doubled<f64>> for f64 {
 }
 
 impl Doubled<f64> {
-    pub const ZERO: Self = Self::new(0., 0.);
-    pub const ONE: Self = Self::new(1., 0.);
-
     #[inline]
     pub fn abs(self) -> Self {
-        Self::new(
-            if self.0 < 0. { -self.0 } else { self.0 },
-            if self.0 < 0. { -self.1 } else { self.1 },
-        )
+        if self.0 < 0. {
+            Self::new(-self.0, -self.1)
+        } else {
+            self
+        }
     }
 
     #[inline]

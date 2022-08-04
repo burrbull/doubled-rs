@@ -42,21 +42,18 @@ impl core::convert::From<Doubled<f32>> for f32 {
 impl core::convert::From<f64> for Doubled<f32> {
     #[inline]
     fn from(f: f64) -> Self {
-        let x = f as f32;
-        Self::new(x, (f - (x as f64)) as f32)
+        Self::from_f64(f)
     }
 }
 
 impl Doubled<f32> {
-    pub const ZERO: Self = Self::new(0., 0.);
-    pub const ONE: Self = Self::new(1., 0.);
-
     #[inline]
     pub fn abs(self) -> Self {
-        Self::new(
-            if self.0 < 0. { -self.0 } else { self.0 },
-            if self.0 < 0. { -self.1 } else { self.1 },
-        )
+        if self.0 < 0. {
+            Self::new(-self.0, -self.1)
+        } else {
+            self
+        }
     }
 
     #[inline]
@@ -84,6 +81,12 @@ impl Doubled<f32> {
         let yh = other.0.upper();
         let yl = other.0 - yh;
         self.1 * yh + xh * other.1 + xl * yl + xh * yl + xl * yh + xh * yh
+    }
+
+    #[inline]
+    pub fn from_f64(f: f64) -> Self {
+        let x = f as f32;
+        Self::new(x, (f - (x as f64)) as f32)
     }
 }
 
