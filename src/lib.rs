@@ -1,7 +1,7 @@
 #![deny(warnings)]
 #![allow(clippy::wrong_self_convention)]
-#![no_std]
-
+#![cfg_attr(not(feature = "simd"), no_std)]
+#![cfg_attr(feature = "simd", feature(portable_simd))]
 mod f32;
 mod f64;
 
@@ -305,7 +305,7 @@ pub trait Upper: Sized {
     fn upper(self) -> Self;
 }
 
-#[cfg(feature = "packed_simd")]
+#[cfg(feature = "simd")]
 pub mod f32x;
-#[cfg(feature = "packed_simd")]
+#[cfg(feature = "simd")]
 pub mod f64x;

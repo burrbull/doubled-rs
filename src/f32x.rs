@@ -1,14 +1,16 @@
 macro_rules! impl_doubled_f32 {
     ($size:literal) => {
         use crate::*;
+        use core::simd::{SimdFloat};
+        use std::simd::{StdFloat};
 
-        type F32x = packed_simd::Simd<[f32; $size]>;
-        type U32x = packed_simd::Simd<[u32; $size]>;
+        type F32x = core::simd::Simd<f32, $size>;
+        type U32x = core::simd::Simd<u32, $size>;
 
         impl Upper for F32x {
             #[inline]
             fn upper(self) -> Self {
-                (U32x::from_bits(self) & U32x::splat(0x_fff_ff000)).into_bits()
+                Self::from_bits(self.to_bits() & U32x::splat(0x_fff_ff000))
             }
         }
 
@@ -36,16 +38,15 @@ macro_rules! impl_doubled_f32 {
         impl Doubled<F32x> {
             #[inline]
             pub const fn splat(value: Doubled<f32>) -> Self {
-                Self::new(F32x::splat(value.0), F32x::splat(value.1))
+                Self::new(F32x::from_array([value.0; $size]), F32x::from_array([value.1; $size]))
             }
 
             #[inline]
             pub fn abs(self) -> Self {
                 Self::new(
                     self.0.abs(),
-                    (U32x::from_bits(self.1)
-                        ^ (U32x::from_bits(self.0) & U32x::from_bits(F32x::splat(-0.))))
-                    .into_bits(),
+                    F32x::from_bits(self.1.to_bits()
+                        ^ (self.0.to_bits() & F32x::splat(-0.).to_bits()))
                 )
             }
 
@@ -196,7 +197,7 @@ macro_rules! impl_doubled_f32 {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn div(self, other: Self) -> Self {
-                let t = other.0.recpre();
+                let t = other.0.recip();
 
                 let q0 = self.0 * t;
                 let u = t.mul_sube(self.0, q0);
@@ -208,7 +209,7 @@ macro_rules! impl_doubled_f32 {
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             fn div(self, other: Self) -> Self {
-                let t = other.0.recpre();
+                let t = other.0.recip();
                 let dh = other.0.upper();
                 let dl = other.0 - dh;
                 let th = t.upper();
@@ -286,13 +287,13 @@ macro_rules! impl_doubled_f32 {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn recpre(self) -> Self {
-                let q0 = self.0.recpre();
+                let q0 = self.0.recip();
                 Self::new(q0, q0 * self.1.fmanp(q0, self.0.fmanp(q0, F32x::splat(1))))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             fn recpre(self) -> Self {
-                let t = self.0.recpre();
+                let t = self.0.recip();
                 let dh = self.0.upper();
                 let dl = self.0 - dh;
                 let th = t.upper();
@@ -313,13 +314,13 @@ macro_rules! impl_doubled_f32 {
             #[cfg(target_feature = "fma")]
             #[inline]
             fn recpre_as_doubled(self) -> Doubled<Self> {
-                let q0 = self.recpre();
+                let q0 = self.recip();
                 Doubled::new(q0, q0 * self.fmanp(q0, Self::splat(1)))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
             fn recpre_as_doubled(self) -> Doubled<Self> {
-                let t = self.recpre();
+                let t = self.recip();
                 let dh = self.upper();
                 let dl = self - dh;
                 let th = t.upper();
@@ -338,21 +339,17 @@ macro_rules! impl_doubled_f32 {
 }
 
 pub mod f32x2 {
-    use packed_simd::*;
     impl_doubled_f32!(2);
 }
 
 pub mod f32x4 {
-    use packed_simd::*;
     impl_doubled_f32!(4);
 }
 
 pub mod f32x8 {
-    use packed_simd::*;
     impl_doubled_f32!(8);
 }
 
 pub mod f32x16 {
-    use packed_simd::*;
     impl_doubled_f32!(16);
 }

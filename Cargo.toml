@@ -9,11 +9,6 @@ repository = "https://github.com/burrbull/doubled-rs"
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
-[dependencies.packed_simd]
-package = "packed_simd_2"
-version = "0.3.8"
-features = ["into_bits"]
-optional = true
-
 [features]
-default = []
+default = ["simd"]
+simd = []
