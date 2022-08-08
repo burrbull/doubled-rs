@@ -176,7 +176,7 @@ macro_rules! impl_doubled_f32 {
             #[inline]
             fn mul(self, other: F32x) -> Self {
                 let r0 = self.0 * other;
-                Self::new(r0, self.1.mul_add(other, (-self.0).mul_add(other, r0)))
+                Self::new(r0, self.1.mul_add(other, self.0.mul_add(other, -r0)))
             }
             #[cfg(not(target_feature = "fma"))]
             #[inline]
