@@ -1,7 +1,7 @@
 #![deny(warnings)]
 #![allow(clippy::wrong_self_convention)]
-#![no_std]
-
+#![cfg_attr(not(feature = "simd"), no_std)]
+#![cfg_attr(feature = "simd", feature(portable_simd))]
 mod f32;
 mod f64;
 
@@ -73,12 +73,8 @@ pub trait MulAsDoubled: Sized {
     fn mul_as_doubled(self, other: Self) -> Doubled<Self>;
 }
 
-pub trait RecPre<T = Self> {
-    fn recpre(self) -> T;
-}
-
-pub trait RecPreAsDoubled: Sized {
-    fn recpre_as_doubled(self) -> Doubled<Self>;
+pub trait RecipAsDoubled: Sized {
+    fn recip_as_doubled(self) -> Doubled<Self>;
 }
 
 pub trait AddChecked<T = Self>: CheckOrder<T> {
@@ -305,7 +301,7 @@ pub trait Upper: Sized {
     fn upper(self) -> Self;
 }
 
-#[cfg(feature = "packed_simd")]
+#[cfg(feature = "simd")]
 pub mod f32x;
-#[cfg(feature = "packed_simd")]
+#[cfg(feature = "simd")]
 pub mod f64x;
