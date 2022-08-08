@@ -214,7 +214,7 @@ macro_rules! impl_doubled_f64 {
                     + nhl * tl
                     + q0 * (F64x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl);
 
-                Self::new(q0, t.mul_add(self.1 - q0 * other.1, u))
+                Self::new(q0, t * (self.1 - q0 * other.1) + u)
             }
         }
 

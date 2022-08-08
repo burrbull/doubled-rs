@@ -69,12 +69,10 @@ macro_rules! impl_doubled_f32 {
                 let xh = self.0.upper();
                 let xl = self.0 - xh;
                 let r0 = self.0 * self.0;
-
-                let mut t = xh.mul_add(xh, -r0);
-                t = (xh + xh).mul_add(xl, t);
-                t = xl.mul_add(xl, t);
-                t = self.0.mul_add(self.1 + self.1, t);
-                Self::new(r0, t)
+                Self::new(
+                    r0,
+                    xh * xh + (-r0) + (xh + xh) * xl + xl * xl + self.0 * (self.1 + self.1),
+                )
             }
 
             #[cfg(target_feature = "fma")]
@@ -159,14 +157,16 @@ macro_rules! impl_doubled_f32 {
                 let yh = other.0.upper();
                 let yl = other.0 - yh;
                 let r0 = self.0 * other.0;
-
-                let mut t = xh.mul_add(yh, -r0);
-                t = xl.mul_add(yh, t);
-                t = xh.mul_add(yl, t);
-                t = xl.mul_add(yl, t);
-                t = self.0.mul_add(other.1, t);
-                t = self.1.mul_add(other.0, t);
-                Self::new(r0, t)
+                Self::new(
+                    r0,
+                    xh * yh
+                        + (-r0)
+                        + xl * yh
+                        + xh * yl
+                        + xl * yl
+                        + self.0 * other.1
+                        + self.1 * other.0,
+                )
             }
         }
 
@@ -186,13 +186,10 @@ macro_rules! impl_doubled_f32 {
                 let yh = other.upper();
                 let yl = other - yh;
                 let r0 = self.0 * other;
-
-                let mut t = xh.mul_add(yh, -r0);
-                t = xl.mul_add(yh, t);
-                t = xh.mul_add(yl, t);
-                t = xl.mul_add(yl, t);
-                t = self.1.mul_add(other, t);
-                Self::new(r0, t)
+                Self::new(
+                    r0,
+                    xh * yh + (-r0) + xl * yh + xh * yl + xl * yl + self.1 * other,
+                )
             }
         }
 
@@ -223,20 +220,13 @@ macro_rules! impl_doubled_f32 {
 
                 let q0 = self.0 * t;
 
-                let mut w = F32x::splat(-1.);
-                w = dh.mul_add(th, w);
-                w = dh.mul_add(tl, w);
-                w = dl.mul_add(th, w);
-                w = dl.mul_add(tl, w);
-                w = -w;
+                let u = nhh * th - q0
+                    + nhh * tl
+                    + nhl * th
+                    + nhl * tl
+                    + q0 * (F32x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl);
 
-                let mut u = nhh.mul_add(th, -q0);
-                u = nhh.mul_add(tl, u);
-                u = nhl.mul_add(th, u);
-                u = nhl.mul_add(tl, u);
-                u = q0.mul_add(w, u);
-
-                Self::new(q0, t.mul_add(self.1 - q0 * other.1, u))
+                Self::new(q0, t * (self.1 - q0 * other.1) + u)
             }
         }
 
@@ -278,12 +268,7 @@ macro_rules! impl_doubled_f32 {
                 let yh = other.upper();
                 let yl = other - yh;
                 let r0 = self * other;
-
-                let mut t = xh.mul_add(yh, -r0);
-                t = xl.mul_add(yh, t);
-                t = xh.mul_add(yl, t);
-                t = xl.mul_add(yl, t);
-                Doubled::new(r0, t)
+                Doubled::new(r0, xh * yh + (-r0) + xl * yh + xh * yl + xl * yl)
             }
         }
 
@@ -306,14 +291,10 @@ macro_rules! impl_doubled_f32 {
                 let th = t.upper();
                 let tl = t - th;
                 let q0 = t;
-
-                let mut u = F32x::splat(-1.);
-                u = dh.mul_add(th, u);
-                u = dh.mul_add(tl, u);
-                u = dl.mul_add(th, u);
-                u = dl.mul_add(tl, u);
-                u = self.1.mul_add(t, u);
-                Self::new(q0, (-t) * u)
+                Self::new(
+                    q0,
+                    t * (F32x::splat(1.) - dh * th - dh * tl - dl * th - dl * tl - self.1 * t),
+                )
             }
         }
 
@@ -333,13 +314,10 @@ macro_rules! impl_doubled_f32 {
                 let th = t.upper();
                 let tl = t - th;
                 let q0 = t;
-
-                let mut u = Self::splat(-1.);
-                u = dh.mul_add(th, u);
-                u = dh.mul_add(tl, u);
-                u = dl.mul_add(th, u);
-                u = dl.mul_add(tl, u);
-                Doubled::new(q0, (-t) * u)
+                Doubled::new(
+                    q0,
+                    t * (Self::splat(1.) - dh * th - dh * tl - dl * th - dl * tl),
+                )
             }
         }
     };
