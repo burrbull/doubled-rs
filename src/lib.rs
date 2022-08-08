@@ -73,12 +73,8 @@ pub trait MulAsDoubled: Sized {
     fn mul_as_doubled(self, other: Self) -> Doubled<Self>;
 }
 
-pub trait RecPre<T = Self> {
-    fn recpre(self) -> T;
-}
-
-pub trait RecPreAsDoubled: Sized {
-    fn recpre_as_doubled(self) -> Doubled<Self>;
+pub trait RecipAsDoubled: Sized {
+    fn recip_as_doubled(self) -> Doubled<Self>;
 }
 
 pub trait AddChecked<T = Self>: CheckOrder<T> {

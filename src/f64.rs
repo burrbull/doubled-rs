@@ -75,6 +75,19 @@ impl Doubled<f64> {
         let yl = other.0 - yh;
         self.1 * yh + xh * other.1 + xl * yl + xh * yl + xl * yh + xh * yh
     }
+
+    pub fn recip(self) -> Doubled<f64> {
+        let t = 1. / self.0;
+        let dh = self.0.upper();
+        let dl = self.0 - dh;
+        let th = t.upper();
+        let tl = t - th;
+        let q0 = t;
+        Self::new(
+            q0,
+            t * (1. - dh * th - dh * tl - dl * th - dl * tl - self.1 * t),
+        )
+    }
 }
 
 impl CheckOrder for Doubled<f64> {
@@ -196,23 +209,8 @@ impl MulAsDoubled for f64 {
     }
 }
 
-impl RecPre for Doubled<f64> {
-    fn recpre(self) -> Doubled<f64> {
-        let t = 1. / self.0;
-        let dh = self.0.upper();
-        let dl = self.0 - dh;
-        let th = t.upper();
-        let tl = t - th;
-        let q0 = t;
-        Self::new(
-            q0,
-            t * (1. - dh * th - dh * tl - dl * th - dl * tl - self.1 * t),
-        )
-    }
-}
-
-impl RecPre<Doubled<f64>> for f64 {
-    fn recpre(self) -> Doubled<f64> {
+impl RecipAsDoubled for f64 {
+    fn recip_as_doubled(self) -> Doubled<f64> {
         let t = 1. / self;
         let dh = self.upper();
         let dl = self - dh;
