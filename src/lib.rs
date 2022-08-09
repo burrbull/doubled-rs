@@ -302,6 +302,6 @@ pub trait Upper: Sized {
 }
 
 #[cfg(feature = "simd")]
-pub mod f32x;
+mod f32x;
 #[cfg(feature = "simd")]
-pub mod f64x;
+mod f64x;
