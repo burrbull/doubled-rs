@@ -1,0 +1,24 @@
+on:
+  push:
+    branches: master
+  pull_request:
+  merge_group:
+
+name: Continuous Integration
+
+jobs:
+  # check if the project builds with MSRV, stable and nighly
+  build:
+    name: Build nightly
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - run: cargo check
+        env:
+          RUSTFLAGS: -D warnings
