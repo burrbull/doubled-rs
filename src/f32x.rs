@@ -1,5 +1,5 @@
 use crate::*;
-use core::simd::{LaneCount, Simd, SimdFloat, SupportedLaneCount};
+use core::simd::{LaneCount, Simd, num::SimdFloat, SupportedLaneCount};
 use std::simd::StdFloat;
 
 type F32x<const N: usize> = Simd<f32, N>;
