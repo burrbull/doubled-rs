@@ -12,3 +12,4 @@ edition = "2021"
 [features]
 default = ["simd"]
 simd = []
+enable_recsqrt_sp = []

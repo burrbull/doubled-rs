@@ -1,54 +1,39 @@
 use crate::*;
-use core::simd::{num::SimdFloat, LaneCount, Simd, SupportedLaneCount};
-use std::simd::StdFloat;
+use core::simd::num::SimdFloat;
+use std::simd::{Simd, StdFloat};
 
 type F64x<const N: usize> = Simd<f64, N>;
 type U64x<const N: usize> = Simd<u64, N>;
 
-impl<const N: usize> Upper for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> Upper for F64x<N> {
     #[inline]
     fn upper(self) -> Self {
         Self::from_bits(self.to_bits() & U64x::splat((0x_ffff_ffff << 32) + 0x_f800_0000))
     }
 }
 
-impl<const N: usize> FromMask for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> FromMask for Doubled<F64x<N>> {
     type Mask = U64x<N>;
     fn from_mask(u0: Self::Mask, u1: Self::Mask) -> Self {
         Self::new(F64x::from_bits(u0), F64x::from_bits(u1))
     }
 }
 
-impl<const N: usize> core::convert::From<F64x<N>> for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> core::convert::From<F64x<N>> for Doubled<F64x<N>> {
     #[inline]
     fn from(f: F64x<N>) -> Self {
         Self::new(f, F64x::splat(0.))
     }
 }
 
-impl<const N: usize> core::convert::From<Doubled<F64x<N>>> for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> core::convert::From<Doubled<F64x<N>>> for F64x<N> {
     #[inline]
     fn from(f: Doubled<F64x<N>>) -> Self {
         f.0 + f.1
     }
 }
 
-impl<const N: usize> Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> Doubled<F64x<N>> {
     #[inline]
     pub const fn splat(value: Doubled<f64>) -> Self {
         Self::new(
@@ -147,10 +132,7 @@ where
     }
 }
 
-impl<const N: usize> core::ops::Add<Doubled<F64x<N>>> for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> core::ops::Add<Doubled<F64x<N>>> for F64x<N> {
     type Output = Doubled<Self>;
     #[inline]
     fn add(self, other: Doubled<Self>) -> Self::Output {
@@ -160,10 +142,7 @@ where
     }
 }
 
-impl<const N: usize> core::ops::Mul for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> core::ops::Mul for Doubled<F64x<N>> {
     type Output = Self;
     #[cfg(target_feature = "fma")]
     #[inline]
@@ -192,10 +171,7 @@ where
     }
 }
 
-impl<const N: usize> core::ops::Mul<F64x<N>> for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> core::ops::Mul<F64x<N>> for Doubled<F64x<N>> {
     type Output = Self;
     #[cfg(target_feature = "fma")]
     #[inline]
@@ -218,10 +194,7 @@ where
     }
 }
 
-impl<const N: usize> core::ops::Div for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> core::ops::Div for Doubled<F64x<N>> {
     type Output = Self;
     #[cfg(target_feature = "fma")]
     #[inline]
@@ -258,48 +231,30 @@ where
     }
 }
 
-impl<const N: usize> CheckOrder for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> CheckOrder for Doubled<F64x<N>> {
     fn check_order(self, _other: Self) {}
 }
 
-impl<const N: usize> CheckOrder<F64x<N>> for Doubled<F64x<N>>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> CheckOrder<F64x<N>> for Doubled<F64x<N>> {
     fn check_order(self, _other: F64x<N>) {}
 }
 
-impl<const N: usize> CheckOrder<Doubled<F64x<N>>> for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> CheckOrder<Doubled<F64x<N>>> for F64x<N> {
     fn check_order(self, _other: Doubled<F64x<N>>) {}
 }
 
-impl<const N: usize> CheckOrder for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> CheckOrder for F64x<N> {
     fn check_order(self, _other: Self) {}
 }
 
-impl<const N: usize> AsDoubled for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> AsDoubled for F64x<N> {
     #[inline]
     fn as_doubled(self) -> Doubled<Self> {
         Doubled::new(self, Self::splat(0.))
     }
 }
 
-impl<const N: usize> MulAsDoubled for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> MulAsDoubled for F64x<N> {
     #[cfg(target_feature = "fma")]
     #[inline]
     fn mul_as_doubled(self, other: Self) -> Doubled<Self> {
@@ -318,10 +273,7 @@ where
     }
 }
 
-impl<const N: usize> RecipAsDoubled for F64x<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<const N: usize> RecipAsDoubled for F64x<N> {
     #[cfg(target_feature = "fma")]
     #[inline]
     fn recip_as_doubled(self) -> Doubled<Self> {
