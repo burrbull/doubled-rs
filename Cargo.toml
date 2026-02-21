@@ -1,6 +1,6 @@
 [package]
 name = "doubled"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Andrey Zgarbul <zgarbul.andrey@gmail.com>"]
 description = "Dekker arithmetic"
 keywords = ["math", "simd"]
